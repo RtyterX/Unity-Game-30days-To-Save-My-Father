@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class PauseMenu : MonoBehaviour
+public class PauseMenuUI : MonoBehaviour
 {
-    public static bool GameIsPaused = false;
+    public static bool gameIsPaused = false;
 
     public GameObject pauseMenuUI;
 
@@ -13,7 +13,7 @@ public class PauseMenu : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (GameIsPaused)
+            if (gameIsPaused)
             {
                 Resume();
             }
@@ -28,13 +28,13 @@ public class PauseMenu : MonoBehaviour
     {
         pauseMenuUI.SetActive(false);
         Time.timeScale = 1f;
-        GameIsPaused = false;
+        gameIsPaused = false;
     }
     void Pause()
     {
         pauseMenuUI.SetActive(true);
         Time.timeScale = 0f;
-        GameIsPaused = true;
+        gameIsPaused = true;
     }
 
     public void LoadMenu()
@@ -42,6 +42,12 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = 1f;
         Debug.Log("Carregando o Menu...");
         SceneManager.LoadScene("Menu");
+    }
+
+    public void Options()
+    {
+        Debug.Log("Abriu Menu de Opções");
+        
     }
 
     public void QuitGame()

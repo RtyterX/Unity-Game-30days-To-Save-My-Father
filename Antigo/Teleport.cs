@@ -25,10 +25,10 @@ public class Teleport : MonoBehaviour
 
     IEnumerator TeleportOurPlayer()
     {
-        playerControl.paused = true;
+        playerControl.isPaused = true;
         yield return new WaitForSeconds(0.1f);
         gameObject.transform.position = new Vector2(5f, 0f);
         yield return new WaitForSeconds(0.1f);
-        playerControl.paused = false;
+        playerControl.isPaused = false;
     }
 }

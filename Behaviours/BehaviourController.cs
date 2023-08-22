@@ -14,7 +14,7 @@ public enum StateMachine
     Dead,
 }
 
-public abstract class Stats : MonoBehaviour
+public abstract class BehaviourController : MonoBehaviour
 {
     // State
     public StateMachine state;
@@ -27,7 +27,6 @@ public abstract class Stats : MonoBehaviour
 
     public virtual void Start()
     {
-
         myAnimator = GetComponent<Animator>();
         myRigidbody = GetComponent<Rigidbody2D>();
         healthController = GetComponent<HealthController>();

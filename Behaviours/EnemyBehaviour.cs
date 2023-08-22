@@ -3,10 +3,10 @@ using UnityEngine.SceneManagement;
 using System;
 using System.Collections;
 
-public class Enemy : Stats
+public class EnemyBehaviour : BehaviourController
 {
-    public GameObject target;
-    public Transform targetPlayer;
+    // public GameObject target;
+    public Transform target;
 
     public bool canRespawn;
     public bool stopChase;
@@ -14,6 +14,7 @@ public class Enemy : Stats
     public float speed = 0.8f;
 
     public float chaseRadius;
+    public float stopRadius;
     public float attackRadius;
     public float spawnRadius;
 
@@ -23,7 +24,7 @@ public class Enemy : Stats
 
 
     // Start is called before the first frame update
-    void Start()
+    public override void Start()
     {
 
         state = StateMachine.Idle;
@@ -32,7 +33,7 @@ public class Enemy : Stats
         myRigidbody = GetComponent<Rigidbody2D>();
         healthController = GetComponent<HealthController>();
 
-        targetPlayer = GameObject.FindGameObjectWithTag("Player").transform;
+        target = GameObject.FindGameObjectWithTag("Player").transform;
 
     }
 
@@ -40,12 +41,12 @@ public class Enemy : Stats
     void Update()
     {
 
-        if (!targetPlayer)
+        if (!target)
         {
             GetTarget();
         }
 
-        checkingDistance = new Vector2(targetPlayer.position.x, targetPlayer.position.y);
+        checkingDistance = new Vector2(target.position.x, target.position.y);
     }
 
     public void FixedUpdate()
@@ -66,14 +67,15 @@ public class Enemy : Stats
     }
 
 
-    void CheckDistance()
+    public void CheckDistance()
     {
         if (!isPaused)
         {
 
 
-            // Chase Target
-            if (Vector3.Distance(targetPlayer.position, transform.position) <= chaseRadius && Vector3.Distance(targetPlayer.position, transform.position) > attackRadius)
+            // Chase Target com Attack
+            // if (Vector3.Distance(target.position, transform.position) <= chaseRadius && Vector3.Distance(target.position, transform.position) > attackRadius)
+            if (Vector3.Distance(target.position, transform.position) <= chaseRadius)
             {
                 Debug.Log("Entrou no Raio de Chase");
 
@@ -83,7 +85,7 @@ public class Enemy : Stats
                 }
 
             }
-            else if (Vector3.Distance(targetPlayer.position, transform.position) > chaseRadius)
+            else if (Vector3.Distance(target.position, transform.position) > chaseRadius)
             {
                 myAnimator.SetBool("wakeUp", false);
             }
@@ -96,7 +98,7 @@ public class Enemy : Stats
 
       //  void movement()
        // {
-        //    myRigidbody.velocity = new Vector2(targetPlayer.position.x * speed, targetPlayer.position.y * speed);
+        //    myRigidbody.velocity = new Vector2(target.position.x * speed, target.position.y * speed);
       //  }
 
     }
@@ -108,15 +110,15 @@ public class Enemy : Stats
 
         if (state == StateMachine.Idle || state == StateMachine.Walk && state != StateMachine.Stagger)
             {
-                Vector3 temp = Vector3.MoveTowards(transform.position, targetPlayer.position, speed * Time.deltaTime);
+                Vector3 temp = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
                 myRigidbody.MovePosition(temp);
                 state = StateMachine.Walk;
                 myAnimator.SetBool("wakeUp", true);
             }
 
-            else if (Vector3.Distance(targetPlayer.position, transform.position) <= attackRadius)
+            else if (Vector3.Distance(target.position, transform.position) <= attackRadius)
             {
-                Vector3 temp = Vector3.MoveTowards(transform.position, targetPlayer.position, speed * Time.deltaTime);
+                Vector3 temp = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
                 AttackCo();
             }
         

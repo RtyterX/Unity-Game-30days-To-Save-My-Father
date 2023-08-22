@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class Teleport : MonoBehaviour
 {
-    public Player playerControl;
+    public PlayerBehaviour playerControl;
 
     // Start is called before the first frame update
     void Start()
     {
-        playerControl = gameObject.GetComponent<Player>();
+        playerControl = gameObject.GetComponent<PlayerBehaviour>();
     }
 
     // Update is called once per frame

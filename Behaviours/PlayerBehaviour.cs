@@ -3,44 +3,47 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class Player : Stats
+public class PlayerBehaviour : BehaviourController
 {
     // Components
+    [Header("Components")]
     public InputController inputs;
     public PlayerStatus playerStatus;
-
-    public Vector2 respawnLocation;
-
-    RespawnPointer respawnPoint;
+    public StaminaController staminaController;
     BoxCollider2D boxCollider;
     public GameObject deathMenuUI;
 
+    // Respawn
+    [Header("Respawn")]
+    public Vector2 respawnLocation;
+    RespawnPointer respawnPoint;
+
     // Movement
+    [Header("Movement")]
     public float speed;
     private float maxSpeed = 0.5f;
     public float run;
+    public float tiredSpeed;
 
 
-    public GameObject testeAttack;
 
-    // Start is called before the first frame update
     public void Start()
     {
-        // State Inicial
+        // Inicial State
         state = StateMachine.Idle;
         isPaused = false;
      
-
         // Components
         inputs = GetComponent<InputController>();
         playerStatus = GetComponent<PlayerStatus>();
-        respawnPoint = GetComponent<RespawnPointer>();
         boxCollider =  GetComponent<BoxCollider2D>();
-
         myAnimator = GetComponent<Animator>();
         myRigidbody = GetComponent<Rigidbody2D>();
         healthController = GetComponent<HealthController>();
+        staminaController = GetComponent<StaminaController>();
 
+        // Respawn
+        respawnPoint = GetComponent<RespawnPointer>();
         respawnLocation = respawnPoint.respawnPosition;
 
 
@@ -54,11 +57,7 @@ public class Player : Stats
     void Update()
     {
         inputs = GetComponent<InputController>();
-
         StartCoroutine(CheckRespawnLocation());
-
-       
-
     }
 
     void FixedUpdate()
@@ -66,71 +65,113 @@ public class Player : Stats
            // Caso não esteja Pausado
         if (!isPaused)
         {
-            // ---------------  Movimentação  --------------------
+            // ----------------------  Player Movement  ----------------------
 
-                // Movement - Down/Up/Right/Left
+            // Movement - Down/Up/Right/Left
             if (inputs.inputHorizontal != 0 || inputs.inputVertical != 0 && state != StateMachine.Attack && state != StateMachine.Interect && state != StateMachine.Stagger)
             {
+                // Get Component
                 inputs = GetComponent<InputController>();
 
-                // Movement - 45º
-                if (inputs.inputHorizontal != 0 && inputs.inputVertical != 0)
+                if (!staminaController.isTired)
                 {
-                    inputs.inputHorizontal *= maxSpeed;
-                    inputs.inputVertical *= maxSpeed;
-                }
-
-                // Movement - Running
-                if (inputs.inputRunning != 0)
-                {
-                    state = StateMachine.Running;
-                    myAnimator.SetBool("running", true);
-                    myAnimator.SetBool("walking", false);
-
-                    float moveX = inputs.inputHorizontal * run;
-                    float moveY = inputs.inputVertical * run;
-                      // Foi necessario criar variaveis as variavbeis moveX e moveY
-                      // para utilizar nos Floats do Animator
-
-
-                       // Realiza o Movimento usando o .velocity
-                    myRigidbody.velocity = new Vector2(moveX, moveY);
-
-                       // Animação em 45º Baixo/Direita
-                    if (inputs.inputHorizontal < 0 && inputs.inputVertical < 0)
+                    // Movement - 45º
+                    if (inputs.inputHorizontal != 0 && inputs.inputVertical != 0)
                     {
-                        myAnimator.SetFloat("moveX", 0);
-                        myAnimator.SetFloat("moveY", -1);
+                        inputs.inputHorizontal *= maxSpeed;
+                        inputs.inputVertical *= maxSpeed;
                     }
-                       // Animação em 45º Baixo/Esquerda
-                    else if (inputs.inputHorizontal > 0 && inputs.inputVertical < 0)
+
+                    // ------ Running ------
+                    if (inputs.inputRunning != 0)
                     {
-                        myAnimator.SetFloat("moveX", 0);
-                        myAnimator.SetFloat("moveY", -1);
+                        // Change State to Running
+                        state = StateMachine.Running;
+                        myAnimator.SetBool("running", true);
+                        myAnimator.SetBool("walking", false);
+
+                        // Movement
+                        float moveX = inputs.inputHorizontal * run;
+                        float moveY = inputs.inputVertical * run;
+                        myRigidbody.velocity = new Vector2(moveX, moveY);
+                        //  * Foi necessario criar variaveis moveX e moveY
+                        //    para utilizar nos Floats do Animator
+
+                        // Stamina Lost
+                        staminaController.UseStamina(1);
+
+                        // --- Running Animation ---
+
+                        // Animação em 45º Baixo/Direita
+                        if (inputs.inputHorizontal < 0 && inputs.inputVertical < 0)
+                        {
+                            myAnimator.SetFloat("moveX", 0);
+                            myAnimator.SetFloat("moveY", -1);
+                        }
+                        // Animação em 45º Baixo/Esquerda
+                        else if (inputs.inputHorizontal > 0 && inputs.inputVertical < 0)
+                        {
+                            myAnimator.SetFloat("moveX", 0);
+                            myAnimator.SetFloat("moveY", -1);
+                        }
+                        // Animação Normal (Animator)
+                        else
+                        {
+                            myAnimator.SetFloat("moveX", moveX);
+                            myAnimator.SetFloat("moveY", moveY);
+                        }
                     }
-                       // Animação Normal (Animator)
+
+                    // ------ NOT Running ------
                     else
                     {
-                        myAnimator.SetFloat("moveX", moveX);
-                        myAnimator.SetFloat("moveY", moveY);
-                    }
-                }
+                        // Change State to Walking
+                        state = StateMachine.Walk;
+                        myAnimator.SetBool("walking", true);
+                        myAnimator.SetBool("running", false);
 
-                // Caso Contrario - Walking (Not Running)
+                        // Movement
+                        float moveX = inputs.inputHorizontal * speed;
+                        float moveY = inputs.inputVertical * speed;
+                        myRigidbody.velocity = new Vector2(moveX, moveY);
+                        //  * Foi necessario criar variaveis moveX e moveY
+                        //    para utilizar nos Floats do Animator
+
+                        // Animação em 45º Baixo/Direita
+                        if (inputs.inputHorizontal < 0 && inputs.inputVertical < 0)
+                        {
+                            myAnimator.SetFloat("moveX", 0);
+                            myAnimator.SetFloat("moveY", -1);
+                        }
+                        // Animação em 45º Baixo/Esquerda
+                        else if (inputs.inputHorizontal > 0 && inputs.inputVertical < 0)
+                        {
+                            myAnimator.SetFloat("moveX", 0);
+                            myAnimator.SetFloat("moveY", -1);
+                        }
+                        // Animação Normal (Animator)
+                        else
+                        {
+                            myAnimator.SetFloat("moveX", moveX);
+                            myAnimator.SetFloat("moveY", moveY);
+                        }
+                    }
+
+                }
+                // --- IF is Tired ---
                 else
                 {
+                    // Change State to Walking
                     state = StateMachine.Walk;
                     myAnimator.SetBool("walking", true);
                     myAnimator.SetBool("running", false);
 
-                    float moveX = inputs.inputHorizontal * speed;
-                    float moveY = inputs.inputVertical * speed;
-                    // Foi necessario criar variaveis as variavbeis moveX e moveY
-                    // para utilizar nos Floats do Animator
-
-
-                    // Realiza o Movimento usando o .velocity
+                    // Movement
+                    float moveX = inputs.inputHorizontal * tiredSpeed;
+                    float moveY = inputs.inputVertical * tiredSpeed;
                     myRigidbody.velocity = new Vector2(moveX, moveY);
+                    //  * Foi necessario criar variaveis moveX e moveY
+                    //    para utilizar nos Floats do Animator
 
                     // Animação em 45º Baixo/Direita
                     if (inputs.inputHorizontal < 0 && inputs.inputVertical < 0)
@@ -150,26 +191,24 @@ public class Player : Stats
                         myAnimator.SetFloat("moveX", moveX);
                         myAnimator.SetFloat("moveY", moveY);
                     }
-
                 }
-            }
 
-               // Caso Contrario - NotWalking
-            else
+            }
+            else // Caso Contrario - NotWalking
             {
+                StopAllCoroutines();
                 state = StateMachine.Idle;
                 myAnimator.SetBool("running", false);
                 myAnimator.SetBool("walking", false);
                 myRigidbody.velocity = new Vector2(0f, 0f);
             }
 
+
+            // ----------------------  END Player Movement  ----------------------
+
             // ---------------  Ações  --------------------
 
-               //  Attack
-            if (inputs.inputAttacking != 0 && state != StateMachine.Stagger && state != StateMachine.Interect)
-            {
-                StartCoroutine(AttackCo());
-            }
+
 
                // Interect
             if (state == StateMachine.Interect)
@@ -191,39 +230,15 @@ public class Player : Stats
              if(state == StateMachine.Idle)
              {
                 myRigidbody.velocity = new Vector2(0f, 0f);
+                StopAllCoroutines();
              }
             
         }
 
     }
 
+
     // ---------------  Coroutines  --------------------
-
-       // Coroutine Attack
-
-    IEnumerator AttackCo()
-    {
-
-        // Entra no estado de Ataque (attacking)
-        state = StateMachine.Attack;
-        myAnimator.SetBool("attacking", true);
-
-        // Player não se Move
-        myRigidbody.velocity = new Vector2(0f, 0f);
-
-        testeAttack.gameObject.SetActive(true);
-
-        // Espera o Tempo Necessario para Realizar a Animação
-        yield return new WaitForSeconds(.5f);
-
-        // Volta para o estado normal (Idle/Not Attacking)
-        myAnimator.SetBool("attacking", false);
-
-        testeAttack.gameObject.SetActive(false);
-
-        // Depois que a rotina terminar o jogador volta poder andar normalmente
-    }
-
 
        // Coroutine Stagger
 

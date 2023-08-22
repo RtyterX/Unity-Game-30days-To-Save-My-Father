@@ -33,7 +33,7 @@ public class TransitionAnimation : MonoBehaviour
 
     IEnumerator StartTransition()
     {
-        // Trava a Câmera
+        camera.isPaused = true;
 
         startingAnimation.SetActive(true);
         yield return new WaitForSeconds(5);
@@ -44,15 +44,14 @@ public class TransitionAnimation : MonoBehaviour
         endingAnimation.SetActive(false);
         startingAnimation.SetActive(false);
         animationOn = false;
-       
-          // Destrava a Câmera
 
-        // camera.CameraFollowPlayer.SetActive(false);
+        camera.isPaused = false;
+;
     }
 
     IEnumerator EnterSceneTransition()
     {
-        // Trava a Câmera
+        camera.isPaused = true;
 
         endingAnimation.SetActive(true);
         yield return new WaitForSeconds(3);
@@ -62,9 +61,8 @@ public class TransitionAnimation : MonoBehaviour
         enterScene = false;
         animationOn = false;
 
-        // Destrava a Câmera
+        camera.isPaused = false;
 
-        // camera.CameraFollowPlayer.SetActive(false);
     }
 
 }

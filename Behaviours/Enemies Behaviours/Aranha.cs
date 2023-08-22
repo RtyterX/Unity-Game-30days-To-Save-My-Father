@@ -3,13 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Aranha : Enemy
+public class Aranha : EnemyBehaviour
 {
-    public bool started = false;
+    public bool started;
+
+    public float startDistance;
+
 
     public void Start()
     {
-
+        started = false;
     }
 
     public void Update()
@@ -17,6 +20,7 @@ public class Aranha : Enemy
         if(!started)
         {
             CheckStart();
+            
         }
         else
         {
@@ -34,7 +38,13 @@ public class Aranha : Enemy
 
     public void CheckStart()
     {
+        if (Vector3.Distance(target.position, transform.position) <= startDistance)
+        {
+            Debug.Log("CheckStart");
+            started = true;
 
+            StartCoroutine(StartAranhaCo());
+        }
     }
 
     public void RandomMovement()
@@ -44,7 +54,14 @@ public class Aranha : Enemy
 
     public void ChaseMovement()
     {
+
+
         Debug.Log("Chase Movement Aranha");
+
+
+
+            CheckDistance();
+
     }
 
     public IEnumerator StartAranhaCo()
@@ -53,27 +70,12 @@ public class Aranha : Enemy
         isPaused = true;
         myAnimator.SetBool("Started", true);
 
-        //Invoke
-
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1f);
 
         isPaused = false;
         myAnimator.SetBool("Started", false);
 
 
-    }
-
-    public IEnumerator AttackAranhaCo()
-    {
-        isPaused = true;
-        myAnimator.SetBool("Attack", true);
-
-        //Invoke
-
-        yield return new WaitForSeconds(3f);
-
-        isPaused = false;
-        myAnimator.SetBool("Attack", false);
     }
 
 }

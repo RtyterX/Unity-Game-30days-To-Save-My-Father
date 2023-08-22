@@ -5,7 +5,7 @@ using UnityEngine;
 public class CarregadorDeObjeto : MonoBehaviour
 {
     public Transform target;
-    public Player ourPlayer;
+    public PlayerBehaviour ourPlayer;
     public InputController inputs;
 
     public bool segurandoItem;
@@ -18,7 +18,7 @@ public class CarregadorDeObjeto : MonoBehaviour
     void Start()
     {
         segurandoItem = false; 
-        ourPlayer = gameObject.GetComponent<Player>();
+        ourPlayer = gameObject.GetComponent<PlayerBehaviour>();
         inputs = GetComponent<InputController>();
 
 

@@ -4,11 +4,9 @@ using UnityEngine;
 
 public class PlayerStatus : MonoBehaviour
 {
-
       // Components
     HealthController healthController;
-    Player player;
-
+    PlayerBehaviour player;
 
       // Atributos
     public double vitality;
@@ -35,7 +33,7 @@ public class PlayerStatus : MonoBehaviour
 
     void Start()
     {
-        player = GetComponent<Player>();
+        player = GetComponent<PlayerBehaviour>();
         healthController = GetComponent<HealthController>();
 
 

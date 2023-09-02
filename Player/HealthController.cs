@@ -5,22 +5,70 @@ using UnityEngine.UI;
 
 public class HealthController : MonoBehaviour
 {
-    public PlayerBehaviour player;
-    public EnemyBehaviour enemy;
+    // Components
+    [Header("Components")]
+    [SerializeField] private PlayerBehaviour player;
+    [SerializeField] private PlayerStatus statusPlayer;
 
-    public bool isDead;
+    // Health
+    [Header("Health")]
+    public double health;
+    public double maxHealth;
     public bool healthGoesMax;
 
-    [SerializeField] public double health;
-    [SerializeField] public double maxHealth;
+    // Life
+    [Header("Life")]
+    public int life;
+    public bool isDead;
 
-    [SerializeField] public int life;
+    // Health Bar - Life 
+    [SerializeField] private Slider healthBar;
+    [SerializeField] private Text lifeUI;
 
-    [SerializeField] public Slider healthBar;
 
+    void Awake()
+    {
+        healthGoesMax = true;
+    }
+
+    void Update()
+    {
+        // Check Max Health Value
+        if (statusPlayer)
+        {
+            // Checa se o valor de Vida Maxima alterou
+        }
+
+        // Check if Health Goes Max
+        if (healthGoesMax)
+        {
+            StartCoroutine(MaxHealthCo());
+        }
+
+        // Update UI
+        if (healthBar)
+        {
+            UpdateHealthBar();
+        }
+        if (lifeUI)
+        {
+            UpdateLifeUI();
+        }
+
+    }
+
+
+    // --------- Methods --------- 
 
     public void TakeDamage(double damage, double criticalValue, DamageType type)
     {
+
+        // ---------- Damage By Type ---------------
+
+
+        // ******* NEED TO CHANGE LATER ******* 
+
+
         // Physic Damage
         if (type == DamageType.Physic)
         {
@@ -28,13 +76,12 @@ public class HealthController : MonoBehaviour
             {
 
                 // Resistencia
-                damage -= enemyStatsComp.physicResistence;
+               // damage -= enemyStatsComp.physicResistence;
 
 
                 // Chance de Dano Critico
                 double criticalChance = enemyStatsComp.luck / 50;
                 double randomNumber = Random.Range(((float)criticalChance), 7f);
-
 
                 Debug.Log("Chance de Dano Critico: "
                             + criticalChance
@@ -50,12 +97,19 @@ public class HealthController : MonoBehaviour
 
                     Debug.Log("Dano Critico: " + damage);
                 }
+                else
+                {
+                    // Applied Damage
+                    health -= damage;
 
-                // Dano Final
-                health -= damage;
+                    Debug.Log("Dano: " + damage);
+                }
 
-                Debug.Log("Dano: " + damage);
+                // Check if Health is Below 0
+                CheckIsDead();
+
             }
+
         }
 
 
@@ -97,7 +151,6 @@ public class HealthController : MonoBehaviour
 
         }
 
-
         // Eletric Damage
         if (type == DamageType.Electric)
         {
@@ -134,7 +187,6 @@ public class HealthController : MonoBehaviour
                 Debug.Log("Dano: " + damage);
             }
         }
-
 
         // Fire Damage
         if (type == DamageType.Fire)
@@ -173,7 +225,6 @@ public class HealthController : MonoBehaviour
         
         }
 
-
         // Ice Damage
         if (type == DamageType.Ice)
         {
@@ -208,7 +259,6 @@ public class HealthController : MonoBehaviour
                 Debug.Log("Dano: " + damage);
             }
         }
-
 
         // Dark Damage
         if (type == DamageType.Dark)
@@ -245,7 +295,6 @@ public class HealthController : MonoBehaviour
             }
         }
 
-
         // Blood Damage
         if (type == DamageType.Blood)
         {
@@ -280,47 +329,55 @@ public class HealthController : MonoBehaviour
             }
         }
 
-        CheckIsDead();
+        // ----------------------------------------
 
     }
 
     public void CheckIsDead()
     {
-        if (isDead == false)
+        if (!isDead)
         {
             if (health <= 0)
             {
                 Debug.Log("Vida Chegou a 0");
                 health = 0;
 
-                if (!player)
+                // Check if Game Object is player
+                if (player) 
                 {
-                    StartCoroutine(enemy.DeathCo());
+                    player.PlayerRespawn();
                 }
                 else
                 {
-                    StartCoroutine(player.RespawnCo());
+                    // ******* NEED TO CHANGE LATER ******* 
+                    Destroy(gameObject);
                 }
 
             }
             else
             {
-                return;
+                if (player.canKnockBack)
+                {
+                    StartCoroutine(player.KnockBackCo());
+                }
             }
-
-            if (healthGoesMax)
-            {
-                StartCoroutine(MaxHealthCo());
-            }
-  
         }
     }
 
+    // Health Bar
     public void UpdateHealthBar()
     {
-        healthBar.value = (int)health / (int)maxHealth;
+        // healthBar.value = (int)health / (int)maxHealth;
     }
 
+    // Life Counter UI
+    public void UpdateLifeUI()
+    {
+        lifeUI.text = life.ToString("00");
+    }
+
+
+    // --------- Coroutine --------- 
     IEnumerator MaxHealthCo()
     {
         health = maxHealth;

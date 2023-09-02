@@ -4,21 +4,18 @@ using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
-    // Teste
-    [Space(10)]
-    public GameObject testeAttack;
-
     // Components
     [Header("Components")]
     public PlayerBehaviour player;
-    public StaminaController staminaController;
+    public StaminaController stamina;
     public InputController inputs;
 
     // Attack
     [Header("Attack")]
     public float attackTime;
     public bool canAttack;
-
+    [Space(10)]
+    public GameObject attack;
 
     // Timer
     [Header("Timer")]
@@ -29,7 +26,7 @@ public class PlayerAttack : MonoBehaviour
 
     void Start()
     {
-        testeAttack.gameObject.SetActive(false);
+        attack.gameObject.SetActive(false);
         canAttack = true;
         rechargeTime = 1.5f;
         timerActive = false;
@@ -52,7 +49,7 @@ public class PlayerAttack : MonoBehaviour
             //  Attack
             if (inputs.inputAttacking != 0 && player.state != StateMachine.Stagger && player.state != StateMachine.Interect)
             {
-                if (!staminaController.isTired)
+                if (!stamina.isTired)
                 {
                     StartCoroutine(AttackCo());
                 }
@@ -86,20 +83,19 @@ public class PlayerAttack : MonoBehaviour
         // Player não se Move
         player.myRigidbody.velocity = new Vector2(0f, 0f);
 
-        testeAttack.gameObject.SetActive(true);
+        attack.gameObject.SetActive(true);
 
         // Espera o Tempo Necessario para Realizar a Animação
         yield return new WaitForSeconds(attackTime);
 
         // Volta para o estado normal (Idle/Not Attacking)
         player.myAnimator.SetBool("attacking", false);
+        player.state = StateMachine.Idle;
 
-        testeAttack.gameObject.SetActive(false);
-
-        // Depois que a rotina terminar o jogador volta poder andar normalmente
+        attack.gameObject.SetActive(false);
 
         // Stamina Lost
-        staminaController.UseStamina(20);
+        stamina.UseStamina(20);
 
         // Start Recharge Time
         timerActive = true;

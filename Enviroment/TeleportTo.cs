@@ -13,8 +13,12 @@ public class TeleportTo : MonoBehaviour
     public void OnTriggerEnter2D(Collider2D col)
     {
         touchedObject = col.gameObject;
-        transition.animationOn = true;
         StartCoroutine(TeleportScene());
+
+        if (transition != null)
+        {
+            transition.animationOn = true;
+        }
     }
 
     public IEnumerator TeleportScene()
@@ -34,17 +38,7 @@ public class TeleportTo : MonoBehaviour
                 playerBehaviour.isPaused = false;
             }
 
-            if (touchedObject.TryGetComponent<NPCBehaviour>(out NPCBehaviour npcBehaviour))
-            {
-                npcBehaviour.isPaused = true;
-                yield return new WaitForSeconds(0.1f);
-
-                touchedObject.transform.position = new Vector2(destineLocation.position.x, destineLocation.position.y);
-                yield return new WaitForSeconds(0.1f);
-
-                npcBehaviour.isPaused = false;
-
-            }
+            
 
         }
 

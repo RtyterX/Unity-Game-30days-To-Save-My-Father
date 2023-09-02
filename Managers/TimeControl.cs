@@ -13,7 +13,8 @@ public class TimeControl : MonoBehaviour
     public float days;
     public string timeInGame;
     
-    [HideInInspector]public float realTime;
+    //[HideInInspector]
+    public float realTime;
 
     [Space(10)]
     [SerializeField] private Text clock;
@@ -64,7 +65,7 @@ public class TimeControl : MonoBehaviour
     }
 
 
-    // ?????????
+    // Time Converter
     public void TimeConverter(int hours, int minutes)
     {
         if(minutes >= 60)

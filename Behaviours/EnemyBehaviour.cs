@@ -22,8 +22,13 @@ public class EnemyBehaviour : BehaviourController
 
     public float respawnDelay;
 
+    [Header("KnockBack")]
+    public bool canKnockBack;
+    [SerializeField] private float strengthKnockBack;
+    [SerializeField] private float delayKnockBack;
+    private Vector2 direction;
 
-    // Start is called before the first frame update
+
     public override void Start()
     {
 
@@ -118,13 +123,10 @@ public class EnemyBehaviour : BehaviourController
 
             else if (Vector3.Distance(target.position, transform.position) <= attackRadius)
             {
-                Vector3 temp = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
+                Vector3 temp = Vector3.zero;
                 AttackCo();
             }
-        
-
-        
-
+       
     }
 
     public IEnumerator AttackCo()
@@ -169,4 +171,25 @@ public class EnemyBehaviour : BehaviourController
     {
         yield return new WaitForSeconds(respawnDelay);
     }
+
+
+    public IEnumerator KnockBackCo()
+    {
+        StopAllCoroutines();
+
+        Debug.Log("Realizou o KnockBack");
+
+        state = StateMachine.Stagger;
+        isPaused = true;
+
+        // Codigo que Realiza o KockBack
+        Vector2 direction = (transform.position - gameObject.transform.position).normalized;
+        myRigidbody.AddForce(direction * strengthKnockBack, ForceMode2D.Impulse);
+
+        yield return new WaitForSeconds(delayKnockBack);
+
+        state = StateMachine.Idle;
+        isPaused = false;
+    }
+
 }

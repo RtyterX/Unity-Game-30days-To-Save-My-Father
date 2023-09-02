@@ -7,259 +7,97 @@ public class PlayerBehaviour : BehaviourController
 {
     // Components
     [Header("Components")]
-    public InputController inputs;
-    public PlayerStatus playerStatus;
-    public StaminaController staminaController;
-    BoxCollider2D boxCollider;
-    public GameObject deathMenuUI;
+    [SerializeField] private PlayerMovement movement;
+    [SerializeField] private PlayerStatus playerStatus;
+    [SerializeField] private StaminaController staminaController;
+    [SerializeField] private BoxCollider2D boxCollider;
+    [SerializeField] private GameObject deathMenuUI;
+
 
     // Respawn
     [Header("Respawn")]
     public Vector2 respawnLocation;
     RespawnPointer respawnPoint;
 
-    // Movement
-    [Header("Movement")]
-    public float speed;
-    private float maxSpeed = 0.5f;
-    public float run;
-    public float tiredSpeed;
 
+    [Header("KnockBack")]
+    public bool canKnockBack;
+    [SerializeField] private float strengthKnockBack;
+    [SerializeField] private float delayKnockBack;
+    [SerializeField] private Vector2 direction;
 
 
     public void Start()
     {
         // Inicial State
         state = StateMachine.Idle;
-        isPaused = false;
-     
+
         // Components
-        inputs = GetComponent<InputController>();
+        movement = GetComponent<PlayerMovement>();
         playerStatus = GetComponent<PlayerStatus>();
-        boxCollider =  GetComponent<BoxCollider2D>();
+        boxCollider = GetComponent<BoxCollider2D>();
         myAnimator = GetComponent<Animator>();
         myRigidbody = GetComponent<Rigidbody2D>();
         healthController = GetComponent<HealthController>();
         staminaController = GetComponent<StaminaController>();
 
+        
+
+
         // Respawn
         respawnPoint = GetComponent<RespawnPointer>();
         respawnLocation = respawnPoint.respawnPosition;
 
-
-        // Animação - Inicia Olhando para Baixo (Animator)
-        myAnimator.SetFloat("moveX", 0);
-        myAnimator.SetFloat("moveY", -1);
-
     }
 
-    // Update is called once per frame
     void Update()
     {
-        inputs = GetComponent<InputController>();
+
+        if (state == StateMachine.Interect && state == StateMachine.Stagger && state == StateMachine.Dead)
+        {
+            movement.isPaused = true;
+        }
+
+        // Interect
+        if (state == StateMachine.Interect)
+        {
+            StartCoroutine(InterectCo());
+        }
+
         StartCoroutine(CheckRespawnLocation());
-    }
-
-    void FixedUpdate()
-    {
-           // Caso não esteja Pausado
-        if (!isPaused)
-        {
-            // ----------------------  Player Movement  ----------------------
-
-            // Movement - Down/Up/Right/Left
-            if (inputs.inputHorizontal != 0 || inputs.inputVertical != 0 && state != StateMachine.Attack && state != StateMachine.Interect && state != StateMachine.Stagger)
-            {
-                // Get Component
-                inputs = GetComponent<InputController>();
-
-                if (!staminaController.isTired)
-                {
-                    // Movement - 45º
-                    if (inputs.inputHorizontal != 0 && inputs.inputVertical != 0)
-                    {
-                        inputs.inputHorizontal *= maxSpeed;
-                        inputs.inputVertical *= maxSpeed;
-                    }
-
-                    // ------ Running ------
-                    if (inputs.inputRunning != 0)
-                    {
-                        // Change State to Running
-                        state = StateMachine.Running;
-                        myAnimator.SetBool("running", true);
-                        myAnimator.SetBool("walking", false);
-
-                        // Movement
-                        float moveX = inputs.inputHorizontal * run;
-                        float moveY = inputs.inputVertical * run;
-                        myRigidbody.velocity = new Vector2(moveX, moveY);
-                        //  * Foi necessario criar variaveis moveX e moveY
-                        //    para utilizar nos Floats do Animator
-
-                        // Stamina Lost
-                        staminaController.UseStamina(1);
-
-                        // --- Running Animation ---
-
-                        // Animação em 45º Baixo/Direita
-                        if (inputs.inputHorizontal < 0 && inputs.inputVertical < 0)
-                        {
-                            myAnimator.SetFloat("moveX", 0);
-                            myAnimator.SetFloat("moveY", -1);
-                        }
-                        // Animação em 45º Baixo/Esquerda
-                        else if (inputs.inputHorizontal > 0 && inputs.inputVertical < 0)
-                        {
-                            myAnimator.SetFloat("moveX", 0);
-                            myAnimator.SetFloat("moveY", -1);
-                        }
-                        // Animação Normal (Animator)
-                        else
-                        {
-                            myAnimator.SetFloat("moveX", moveX);
-                            myAnimator.SetFloat("moveY", moveY);
-                        }
-                    }
-
-                    // ------ NOT Running ------
-                    else
-                    {
-                        // Change State to Walking
-                        state = StateMachine.Walk;
-                        myAnimator.SetBool("walking", true);
-                        myAnimator.SetBool("running", false);
-
-                        // Movement
-                        float moveX = inputs.inputHorizontal * speed;
-                        float moveY = inputs.inputVertical * speed;
-                        myRigidbody.velocity = new Vector2(moveX, moveY);
-                        //  * Foi necessario criar variaveis moveX e moveY
-                        //    para utilizar nos Floats do Animator
-
-                        // Animação em 45º Baixo/Direita
-                        if (inputs.inputHorizontal < 0 && inputs.inputVertical < 0)
-                        {
-                            myAnimator.SetFloat("moveX", 0);
-                            myAnimator.SetFloat("moveY", -1);
-                        }
-                        // Animação em 45º Baixo/Esquerda
-                        else if (inputs.inputHorizontal > 0 && inputs.inputVertical < 0)
-                        {
-                            myAnimator.SetFloat("moveX", 0);
-                            myAnimator.SetFloat("moveY", -1);
-                        }
-                        // Animação Normal (Animator)
-                        else
-                        {
-                            myAnimator.SetFloat("moveX", moveX);
-                            myAnimator.SetFloat("moveY", moveY);
-                        }
-                    }
-
-                }
-                // --- IF is Tired ---
-                else
-                {
-                    // Change State to Walking
-                    state = StateMachine.Walk;
-                    myAnimator.SetBool("walking", true);
-                    myAnimator.SetBool("running", false);
-
-                    // Movement
-                    float moveX = inputs.inputHorizontal * tiredSpeed;
-                    float moveY = inputs.inputVertical * tiredSpeed;
-                    myRigidbody.velocity = new Vector2(moveX, moveY);
-                    //  * Foi necessario criar variaveis moveX e moveY
-                    //    para utilizar nos Floats do Animator
-
-                    // Animação em 45º Baixo/Direita
-                    if (inputs.inputHorizontal < 0 && inputs.inputVertical < 0)
-                    {
-                        myAnimator.SetFloat("moveX", 0);
-                        myAnimator.SetFloat("moveY", -1);
-                    }
-                    // Animação em 45º Baixo/Esquerda
-                    else if (inputs.inputHorizontal > 0 && inputs.inputVertical < 0)
-                    {
-                        myAnimator.SetFloat("moveX", 0);
-                        myAnimator.SetFloat("moveY", -1);
-                    }
-                    // Animação Normal (Animator)
-                    else
-                    {
-                        myAnimator.SetFloat("moveX", moveX);
-                        myAnimator.SetFloat("moveY", moveY);
-                    }
-                }
-
-            }
-            else // Caso Contrario - NotWalking
-            {
-                StopAllCoroutines();
-                state = StateMachine.Idle;
-                myAnimator.SetBool("running", false);
-                myAnimator.SetBool("walking", false);
-                myRigidbody.velocity = new Vector2(0f, 0f);
-            }
-
-
-            // ----------------------  END Player Movement  ----------------------
-
-            // ---------------  Ações  --------------------
-
-
-
-               // Interect
-            if (state == StateMachine.Interect)
-            {
-                StartCoroutine(InterectCo());
-            }
-
-               // Stagger
-            if (state == StateMachine.Stagger)
-            {
-                StartCoroutine(StaggerCo());
-            }
-
-        }
-
-        // Caso Esteja Pausado - Not Move
-        else
-        {
-             if(state == StateMachine.Idle)
-             {
-                myRigidbody.velocity = new Vector2(0f, 0f);
-                StopAllCoroutines();
-             }
-            
-        }
 
     }
 
 
     // ---------------  Coroutines  --------------------
 
-       // Coroutine Stagger
 
-    IEnumerator StaggerCo()
+    // Coroutine KnockBack
+
+    public IEnumerator KnockBackCo()
     {
-        // Player não se Move
-        myRigidbody.velocity = Vector2.zero;
-
-        // Entra no estado de Stagger 
+        // Pause Player
         state = StateMachine.Stagger;
         myAnimator.SetBool("stagger", true);
+        movement.isPaused = true;
 
-        // Espera o Tempo Necessario para Realizar a Animação
-        yield return new WaitForSeconds(.3f);
+        // Codigo que Realiza o KockBack
+        Vector2 direction = (transform.position - gameObject.transform.position).normalized;
+        myRigidbody.AddForce(direction * strengthKnockBack, ForceMode2D.Impulse);
 
-        // Volta para o estado normal (Idle/Can Walk our Attack)
+        Debug.Log("Realizou o KnockBack");
+
+        yield return new WaitForSeconds(delayKnockBack);
+
+        // Return Player Movement
         myAnimator.SetBool("stagger", false);
-        
+        state = StateMachine.Idle;
+        movement.isPaused = false; 
+
     }
 
-        // CoroutineInterect
+
+    // CoroutineInterect
 
     IEnumerator InterectCo()
     {
@@ -285,65 +123,95 @@ public class PlayerBehaviour : BehaviourController
 
     }
 
-    public IEnumerator RespawnCo()
+    public void PlayerRespawn()
     {
-        isPaused = true;
 
-        Debug.Log("Comecou a Rotina Respawn()");
+        // Pause Player Movement
+        movement.isPaused = true;
+
+        // Player lost Life
         healthController.life = healthController.life - 1;
         Debug.Log("Player Perdeu Vida");
 
-        // Animação
+        // Check if Life is Below 0
         if (healthController.life <= 0)
         {
             healthController.life = 0;
 
-            // Animação de Stagger
-            myAnimator.SetBool("stagger", true);
-            state = StateMachine.Stagger;
-            yield return new WaitForSeconds(0.5f);
-
+            // Death Coroutine
             StartCoroutine(DeathCo());
 
         }
-        else
+        else  // Respawn
         {
-            Debug.Log("Deu Respawn");
-
-            healthController.healthGoesMax = true;
-            Debug.Log("Player Vida Maxima Voltou");
-
-            myAnimator.SetBool("stagger", true);
-            state = StateMachine.Stagger;
-            yield return new WaitForSeconds(1f);
-
-            myAnimator.SetBool("stagger", false);
-
-            gameObject.transform.position = new Vector2(respawnLocation.x, respawnLocation.y);
-            Debug.Log("Player deu Respawn");
-
-            //yield return new WaitForSeconds(0.1f);
-
-            isPaused = false;
-
+            StartCoroutine(RespawnCo());
         }
-
     }
+
+
+    //  ---------- Coroutines ---------- 
+
+    public IEnumerator RespawnCo()
+    {
+        // Pause Player
+        state = StateMachine.Stagger;
+        myAnimator.SetBool("stagger", true);
+        movement.isPaused = true;
+
+        // KockBack
+        Vector2 direction = (transform.position - gameObject.transform.position).normalized;
+        myRigidbody.AddForce(direction * strengthKnockBack, ForceMode2D.Impulse);
+
+        Debug.Log("Realizou o KnockBack");
+
+        // KnockBack Wait Time
+        yield return new WaitForSeconds(delayKnockBack);
+
+        // Respawn Player
+        gameObject.transform.position = new Vector2(respawnLocation.x, respawnLocation.y);
+        Debug.Log("Player deu Respawn");
+
+        // Health Goes Max
+        healthController.healthGoesMax = true;
+
+        // Respawn movement delay
+        yield return new WaitForSeconds(0.2f);
+
+        // Player can Move Again
+        state = StateMachine.Idle;
+        myAnimator.SetBool("stagger", false);
+        movement.isPaused = false;
+    }
+
 
     public IEnumerator DeathCo()
     {
         Debug.Log("Comecou a Rotina DeathCo()");
 
+        // Pause Player
+        state = StateMachine.Stagger;
+        myAnimator.SetBool("stagger", true);
+        movement.isPaused = true;
+
         // Programação Defensiva
         healthController.life = 0;
         healthController.health = 0;
-       
-        // Components
+
+        // KockBack
+        Vector2 direction = (transform.position - gameObject.transform.position).normalized;
+        myRigidbody.AddForce(direction * strengthKnockBack, ForceMode2D.Impulse);
+
+        Debug.Log("Realizou o KnockBack");
+
+        // KnockBack Wait Time
+        yield return new WaitForSeconds(delayKnockBack);
+
+
+        // Player goes Dead
         state = StateMachine.Dead;
         boxCollider.enabled = false;
-        isPaused = true;
-
-        yield return new WaitForSeconds(0.5f);
+        movement.isPaused = true;
+        healthController.isDead = true;
 
         // Animação de Morte
         myAnimator.SetBool("dying", true);
@@ -353,15 +221,13 @@ public class PlayerBehaviour : BehaviourController
 
         // Menu de Morte
         deathMenuUI.SetActive(true);
-        Debug.Log("Abre o Menu de Morte");
 
     }
-
 
     IEnumerator CheckRespawnLocation()
     {
         respawnLocation = respawnPoint.respawnPosition;
         yield return new WaitForSeconds(0.1f);
     }
-
+    
 }

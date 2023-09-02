@@ -4,6 +4,7 @@ using UnityEngine;
 
 public enum StateMachine
 {
+    Paused,
     Idle,
     Walk,
     Running,

@@ -30,6 +30,9 @@ public class DialogueScript : MonoBehaviour
     private float startNewTextDelay;
     private float TextDelay;
 
+    //NPC
+    public NPCBehaviour NPCbehaviour;
+
 
     void Awake()
     {
@@ -107,6 +110,14 @@ public class DialogueScript : MonoBehaviour
 
                     // Timer Value Change
                     TextDelay = startNewTextDelay;
+
+                    if (NPCbehaviour != null)
+                    {
+                        if (!NPCbehaviour.attackMode)
+                        {
+                            NPCbehaviour.isStopped = false;
+                        }
+                    }
                 }
 
                 // Timer
@@ -122,6 +133,14 @@ public class DialogueScript : MonoBehaviour
             {
                 // Active Dialog Box
                 dialogBox.SetActive(true);
+
+                if (NPCbehaviour != null)
+                {
+                    if (!NPCbehaviour.attackMode)
+                    {
+                        NPCbehaviour.isStopped = true;
+                    }
+                }
 
                 // Write Text
                 StartCoroutine(TypewriterEffectCo(dialog[currentDialogue]));

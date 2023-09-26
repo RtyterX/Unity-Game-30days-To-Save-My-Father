@@ -113,7 +113,7 @@ public class DialogueScript : MonoBehaviour
 
                     if (NPCbehaviour != null)
                     {
-                        if (!NPCbehaviour.attackMode)
+                        if (NPCbehaviour.mode != NPCMode.Attack)
                         {
                             NPCbehaviour.isStopped = false;
                         }
@@ -136,7 +136,7 @@ public class DialogueScript : MonoBehaviour
 
                 if (NPCbehaviour != null)
                 {
-                    if (!NPCbehaviour.attackMode)
+                    if (NPCbehaviour.mode != NPCMode.Attack)
                     {
                         NPCbehaviour.isStopped = true;
                     }

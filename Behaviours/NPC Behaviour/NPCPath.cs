@@ -7,4 +7,6 @@ public class NPCPath
 {
     public string schedule;
     public GameObject[] waypoint;
+    public bool doRandomPath;
+
 }

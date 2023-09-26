@@ -6,6 +6,7 @@ public enum EnemyMode
 {
     NotStarted,
     Idle,
+    ReturnSpawn,
     RandomWalk,
     Attack
 }
@@ -25,6 +26,7 @@ public class EsqueletoBehaviour : MonoBehaviour
     public Animator myAnimator;
     public Rigidbody2D myRigidbody;
     public GameObject attackHit;
+    public GameObject spawnPoint;
 
 
     // Mode
@@ -37,7 +39,8 @@ public class EsqueletoBehaviour : MonoBehaviour
     public bool doRandomMoviment;
     public float speedChase;
     public float normalSpeed;
-    public GameObject spawnPoint;
+    public bool backToSpawnPosition;
+
 
     // Random Movement
     [Header("Random Movement")]
@@ -47,7 +50,6 @@ public class EsqueletoBehaviour : MonoBehaviour
     public float randomWalkRadius;
     public float randomWalkMax;
     public float randomWalkMin;
-
 
 
     // Attack
@@ -61,7 +63,7 @@ public class EsqueletoBehaviour : MonoBehaviour
 
     public void Start()
     {
-        // Component
+        // Components
         player = GameObject.FindGameObjectWithTag("Player");
         health = GetComponent<HealthController>();
         myAnimator = GetComponent<Animator>();
@@ -79,25 +81,31 @@ public class EsqueletoBehaviour : MonoBehaviour
         {
             HealthRegeneration();
         }
-
+         
         if (started)
         {
             if (Vector3.Distance(target.transform.position, transform.position) <= chaseRadius)
             {
                 // Start Attack Mode
-                mode = EnemyMode.Attack;
+                StartCoroutine(StartChaseTarget());
             }
             else if (Vector3.Distance(target.transform.position, transform.position) >= chaseRadius)
             {
-                regenHealth = true;
-
-                if (doRandomMoviment)
+                // Start Return to Spawn Point Coroutine
+                StartCoroutine(OutOfRangeCo());
+                
+                if (!backToSpawnPosition)
                 {
-                    StartCoroutine(StartRandomMovimentCo());
+                    if (doRandomMoviment)
+                    {
+                        StartCoroutine(StartRandomMovimentCo());
+                    }
                 }
-
+                else
+                {
+                     StartCoroutine(());
+                }
             }
-
         }
         else
         {
@@ -128,6 +136,10 @@ public class EsqueletoBehaviour : MonoBehaviour
                 else if (mode == EnemyMode.RandomWalk)
                 {
                     RandomMovement();
+                }
+                else if (mode == EnemyMode.ReturnSpawn)
+                {
+                    BackToSpawnPoint();
                 }
                 else
                 {
@@ -165,6 +177,24 @@ public class EsqueletoBehaviour : MonoBehaviour
 
 
     // -------- MOVEMENT --------
+
+    public void BackToSpawnPoint()
+    {
+        if (transform.position == spawnPoint.transform.position) 
+        {
+
+        }
+        else
+        {
+            // Move to Spawn Point
+            Vector3 moveToSpawnPoint = Vector3.MoveTowards(transform.position,
+            spawnPoint.transform.position,
+            speedChase * Time.deltaTime);
+
+            myRigidbody.MovePosition(moveToSpawnPoint);
+        }
+    }
+
 
     public void ChaseMovement()
     {
@@ -348,7 +378,7 @@ public class EsqueletoBehaviour : MonoBehaviour
     }
 
 
-    // ------- CHECK ATTACK MODE -------
+    // ------- HEALTH REGENERATION -------
 
     public void HealthRegeneration()
     {
@@ -372,7 +402,6 @@ public class EsqueletoBehaviour : MonoBehaviour
 
         isPaused = false;
         myAnimator.SetBool("Started", false);
-
     }
 
     public IEnumerator EndedBehaviour()
@@ -390,12 +419,38 @@ public class EsqueletoBehaviour : MonoBehaviour
         isPaused = false;
         myAnimator.SetBool("Ended", false);
         mode = EnemyMode.NotStarted;
+    }
 
+    public IEnumerator OutOfRangeCo()
+    { 
+        Debug.Log("Começou OutOfRangeCo");
+        
+        regenHealth = true;
+        mode = EnemyMode.Idle;
+        isPaused = true;
+
+        yield return new WaitForSeconds(delayAttack);
+
+        isPaused = false;
+        mode = EnemyMode.ReturnSpawn;
+    }           
+
+    public IEnumerator StartChaseTarget()
+    {
+        Debug.Log("Começou StartChaseAttackCo");
+        mode = EnemyMode.Idle;
+        isPaused = true;
+
+        yield return new WaitForSeconds(delayAttack);
+
+        isPaused = false;
+        mode = EnemyMode.Attack;
+        backToSpawnPosition = true;
     }
 
     public IEnumerator AttackCo()
     {
-        Debug.Log("Attach Co");
+        Debug.Log("Começou AttachCo");
 
         isPaused = true;
         attackHit.SetActive(true);
@@ -404,7 +459,6 @@ public class EsqueletoBehaviour : MonoBehaviour
 
         isPaused = false;
         attackHit.SetActive(false);
-
     }
 
     public IEnumerator StartRandomMovimentCo()
@@ -418,7 +472,6 @@ public class EsqueletoBehaviour : MonoBehaviour
 
         isPaused = false;
         mode = EnemyMode.RandomWalk;
-
     }
 
     public IEnumerator DelayBetweenRandomPath()

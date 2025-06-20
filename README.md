@@ -12,8 +12,8 @@ Assim evitamos a criação de varios scripts para seguir com o comportamento de 
 
 Manager:
 Responsável por controlar um elemento que influencia em todos os objetos ativos. Ou seja, ele atua no mundo como um todo e não apenas em um objeto de forma individual
-Exemplo: Tempo dentro do Jogo, Estatisicas, os Menus do jogo
+Exemplo: Tempo dentro do Jogo, Estatiscas, Menus do jogo
 
 Controller:
-São componenetes que controlam informações indivituais de um objeto ou personagem (controlavel ou não) e determinam seu comportamento
+São componentes que controlam informações indivituais de um objeto ou personagem (controlavel ou não) e determinam seu comportamento
 Exemplos: vida, estamina e comportamento.

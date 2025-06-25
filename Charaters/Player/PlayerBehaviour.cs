@@ -5,114 +5,55 @@ using UnityEngine.SceneManagement;
 
 public class PlayerBehaviour : BehaviourController
 {
-    public bool playerIsTired;
-
-    // Components
     [Header("Components")]
-    [HideInInspector] private MovementController movement;
-    [HideInInspector] private StatsController playerStatus;
+    [HideInInspector] private PlayerMovement2D movement;
+
+    [Header("Death")]
     [HideInInspector] private BoxCollider2D boxCollider;
-    [HideInInspector] private UnityEngine.GameObject deathMenuUI;
-
-    // Respawn
-    [Header("Respawn")]
-    public Vector2 respawnLocation;
-    RespawnPointer respawnPoint;
-
-    [Header("KnockBack")]
-    public bool canKnockBack;
-    [HideInInspector] private float strengthKnockBack;
-    [HideInInspector] private float delayKnockBack;
-    [HideInInspector] private Vector2 direction;
+    [HideInInspector] private GameObject deathMenuUI;
 
 
     public override void Start()
     {
         base.Start();
-        // Inicial State
-        state = StateMachine.Idle;
+        state = StateMachine.Idle;                      // Inicial State
 
         // Components
-        movement = GetComponent<MovementController>();
-        playerStatus = GetComponent<StatsController>();
+        movement = GetComponent<PlayerMovement2D>();
         boxCollider = GetComponent<BoxCollider2D>();
-
-        // Respawn
-        respawnPoint = GetComponent<RespawnPointer>();
-        respawnLocation = respawnPoint.respawnPosition;
-
-    }
-
-    void FixedUpdate()
-    {
-        if (stamina.isTired)
-        {
-            state = StateMachine.Tired;
-            playerIsTired = true;
-        }
-        else if (!stamina.isTired && playerIsTired)
-        {
-            state = StateMachine.Idle;
-            playerIsTired = false;
-        }
-
-
-        if (state == StateMachine.Interect && state == StateMachine.Stagger && state == StateMachine.Dead)
-        {
-            movement.isPaused = true;
-
-            // If Dead...
-            if (state == StateMachine.Dead)
-            {
-                StartCoroutine(DeathCo());
-            }
-
-            // Interect
-            if (state == StateMachine.Interect)
-            {
-                StartCoroutine(InterectCo());
-            }
-
-            StartCoroutine(CheckRespawnLocation());
-        }
-
     }
 
 
-    // ---------------  Coroutines  --------------------
-
-
-    // Coroutine KnockBack
-
-    public IEnumerator KnockBackCo()
+    public override void ChangeState(StateMachine playerState)
     {
-        // Pause Player
-        state = StateMachine.Stagger;
-        myAnimator.SetBool("stagger", true);
-        movement.isPaused = true;
-
-        // Codigo que Realiza o KockBack
-        Vector2 direction = (transform.position - gameObject.transform.position).normalized;
-        myRigidbody.AddForce(direction * strengthKnockBack, ForceMode2D.Impulse);
-
-        Debug.Log("Realizou o KnockBack");
-
-        yield return new WaitForSeconds(delayKnockBack);
-
-        // Return Player Movement
-        myAnimator.SetBool("stagger", false);
-        state = StateMachine.Idle;
-        movement.isPaused = false; 
-
+        base.ChangeState(playerState);
+        switch (state)
+        {
+            case StateMachine.Idle:
+                movement.isPaused = false;
+                break;
+            case StateMachine.Interect:
+                movement.isPaused = true;
+                break;
+            case StateMachine.Attacking:
+                movement.isPaused = true;
+                break;
+            case StateMachine.Stagger:
+                movement.isPaused = true;
+                break;
+            case StateMachine.Dead:
+                movement.isPaused = true;
+                break;
+        }
     }
 
 
-    // CoroutineInterect
+    // --- Animations --- 
 
-    IEnumerator InterectCo()
+    IEnumerator InterectAnimationCo()
     {
-        // Player não se Move
-        myRigidbody.velocity = new Vector2(0f, 0f);
+        // Player não se Move
+        myRigidbody.velocity = new Vector2(0f, 0f);
 
         // Entra no estado de Interação (Interect)
         state = StateMachine.Interect;
@@ -129,118 +70,15 @@ public class PlayerBehaviour : BehaviourController
 
     }
 
-    public void PlayerRespawn()
+
+    private IEnumerator DeathAnimationCo()
     {
-
-        // Pause Player Movement
-        movement.isPaused = true;
-
-        // Player lost Life
-        health.life = health.life - 1;
-        Debug.Log("Player Perdeu Vida");
-
-        // Check if Life is Below 0
-        if (health.life <= 0)
-        {
-            health.life = 0;
-
-            // Death Coroutine
-            StartCoroutine(DeathCo());
-
-        }
-        else  // Respawn
-        {
-            StartCoroutine(RespawnCo());
-        }
-    }
-
-
-    //  ---------- Coroutines ---------- 
-
-    public IEnumerator RespawnCo()
-    {
-        // Pause Player
-        state = StateMachine.Stagger;
-        myAnimator.SetBool("stagger", true);
-        movement.isPaused = true;
-
-        // KockBack
-        Vector2 direction = (transform.position - gameObject.transform.position).normalized;
-        myRigidbody.AddForce(direction * strengthKnockBack, ForceMode2D.Impulse);
-
-        Debug.Log("Realizou o KnockBack");
-
-        // KnockBack Wait Time
-        yield return new WaitForSeconds(delayKnockBack);
-
-        // Respawn Player
-        gameObject.transform.position = new Vector2(respawnLocation.x, respawnLocation.y);
-        Debug.Log("Player deu Respawn");
-
-        // Health Goes Max
-        health.healthGoesMax = true;
-
-        // Respawn movement delay
-        yield return new WaitForSeconds(0.2f);
-
-        // Player can Move Again
-        state = StateMachine.Idle;
-        myAnimator.SetBool("stagger", false);
-        movement.isPaused = false;
-    }
-
-
-    private IEnumerator DeathCo()
-    {
-        Debug.Log("Comecou a Rotina DeathCo()");
-
-        // Pause Player
-        state = StateMachine.Stagger;
-        myAnimator.SetBool("stagger", true);
-        movement.isPaused = true;
-
-        // Programação Defensiva
-        health.life = 0;
-        health.currentHealth = 0;
-
-        // KockBack
-        Vector2 direction = (transform.position - gameObject.transform.position).normalized;
-        myRigidbody.AddForce(direction * strengthKnockBack, ForceMode2D.Impulse);
-
-        Debug.Log("Realizou o KnockBack");
-
-        // KnockBack Wait Time
-        yield return new WaitForSeconds(delayKnockBack);
-
-
-        // Player goes Dead
-        state = StateMachine.Dead;
         boxCollider.enabled = false;
-        movement.isPaused = true;
-        health.isDead = true;
-
-        // Animação de Morte
-        myAnimator.SetBool("dying", true);
-
-        // Espera a Animação
-        yield return new WaitForSeconds(1.1f);
-
-        // Menu de Morte
-        deathMenuUI.SetActive(true);
+        myAnimator.SetBool("dying", true);       // Animação de Morte
+        yield return new WaitForSeconds(1.1f);   // Espera a Animação
+        deathMenuUI.SetActive(true);             // Menu de Morte
 
     }
 
-    IEnumerator CheckRespawnLocation()
-    {
-        respawnLocation = respawnPoint.respawnPosition;
-        yield return new WaitForSeconds(0.1f);
-    }
-
-
-    public IEnumerator PlayerIsTired()
-    {
-        yield return new WaitForSeconds(0.1f);
-        Debug.Log("Started CoRoutine: - PlayerisTired");
-
-    }
 }
+

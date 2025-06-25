@@ -1,12 +1,10 @@
 ﻿using UnityEngine;
 
-public class Aranha : EnemyState
+public class AranhaScript : EnemyState
 {
     public float newSpeed;
     public float attackRadius;
     public float fleeRadius;
-
-    public bool canMove;
     public bool canAttack;
 
     public InputController playerInput;
@@ -22,11 +20,38 @@ public class Aranha : EnemyState
         canAttack = true;
     }
 
+    public override void ChangeState(StateMachine enemyState)
+    {
+        base.ChangeState(enemyState);
+        switch (state)
+        {
+            case StateMachine.Idle:
+                ReturnMovement();
+                ReturnAttack();
+                break;
+            case StateMachine.Interect:
+                canMove = false;
+                canAttack = false;
+                break;
+            case StateMachine.Attacking:
+                canMove = false;
+                canAttack = false;
+                break;
+            case StateMachine.Stagger:
+                canMove = false;
+                canAttack = false;
+                break;
+            case StateMachine.Dead:
+                canMove = false;
+                canAttack = false;
+                break;
+        }
+    }
 
     public override void Update()
     {
-        base.Update();
-        if (battleOn)
+            base.Update();
+        if (battleOn && state != StateMachine.Stagger)
         {
             if (Vector3.Distance(target.transform.position, transform.position) <= attackRadius)
             {
@@ -42,13 +67,13 @@ public class Aranha : EnemyState
                         ShootAttack();
                     }
                     if (transform.position.y <= target.transform.position.y + 0.10f && transform.position.y >= target.transform.position.y - 0.10f)
-                    { 
+                    {
                         ShootAttack();
                     }
                 }
             }
 
-            if (canMove)
+            if (canMove && state != StateMachine.Stagger)
             {
                 if (Vector3.Distance(target.transform.position, transform.position) <= attackRadius)
                 {
@@ -68,7 +93,7 @@ public class Aranha : EnemyState
         {
             // Not Move
         }
-
+       
     }
 
 

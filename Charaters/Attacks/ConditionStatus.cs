@@ -16,7 +16,7 @@ public class ConditionStatus : MonoBehaviour
 {
     [SerializeField] TypeStatus typeStatus;
     //  [SerializeField] HealthBar healthBar;
-    [SerializeField] DamageType damageType;
+    [SerializeField] public DamageType damageType;
     public PlayerMovement2D playerMovement;
 
 
@@ -88,7 +88,7 @@ public class ConditionStatus : MonoBehaviour
         {
             damageType = DamageType.Physic;
 
-            playerHealthComp.TakeDamage(1, 0, damageType);
+            // playerHealthComp.TakeDamage(1, 0, damageType);
 
             // Codigo de deixa o personagem verde
             // Audio de Poison
@@ -110,7 +110,7 @@ public class ConditionStatus : MonoBehaviour
 
         for (int i = 0; i < 7; i++)
         {
-            playerHealthComp.TakeDamage(2, 0, damageType);
+           // playerHealthComp.TakeDamage(2, 0, damageType);
 
             // Codigo de deixa o personagem verde
             // Audio de Poison
@@ -132,7 +132,7 @@ public class ConditionStatus : MonoBehaviour
 
         for (int i = 0; i < 15; i++)
         {
-            playerHealthComp.TakeDamage(1, 0, damageType);
+           // playerHealthComp.TakeDamage(1, 0, damageType);
 
             // Codigo de deixa o personagem Vermelho
             // Audio de Burn
@@ -153,7 +153,7 @@ public class ConditionStatus : MonoBehaviour
 
         damageType = DamageType.Ice;
 
-        playerHealthComp.TakeDamage(10, 0, damageType);
+      //  playerHealthComp.TakeDamage(10, 0, damageType);
 
         playerMovement.isPaused = true;
 

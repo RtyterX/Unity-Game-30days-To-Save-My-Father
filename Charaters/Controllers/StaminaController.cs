@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class StaminaController : MonoBehaviour
@@ -13,9 +14,9 @@ public class StaminaController : MonoBehaviour
     [SerializeField] private float rechargeRate;
     [SerializeField] private float rechargeTime;
     [SerializeField] private bool canRecharge;               // Utilize for Counter Effects only to Stop Recharge Stamina. Ex: Ice
-    
+
     [Space(8)]
-    
+
     [SerializeField] public bool isTired;
     [SerializeField] public float tiredDelay;
 
@@ -23,20 +24,18 @@ public class StaminaController : MonoBehaviour
     [HideInInspector] private bool timerActive;
     [HideInInspector] private float timer;
 
-    // Component
-    [HideInInspector] private StatsController stats;
+    [HideInInspector] private BehaviourController obj;
 
     void Start()
     {
-        stats = GetComponent<StatsController>();
-
         // Start Values
-        maxStamina = (float)stats.endurance * 5.5f;
         currentStamina = maxStamina;
         startRecover = false;
         timerActive = false;
         canRecharge = true;
         isTired = false;
+
+        obj = GetComponent<BehaviourController>();
     }
 
     void Update()
@@ -60,12 +59,12 @@ public class StaminaController : MonoBehaviour
                     currentStamina += rechargeRate;   // Recover Stamina by Frame
                 }
             }
-            else  
+            else
             {
                 startRecover = false;                 // Stop Recovery
                 currentStamina = maxStamina;          // Maintain Stamina not above Max
             }
-        
+
         }
 
     }
@@ -81,44 +80,39 @@ public class StaminaController : MonoBehaviour
     }
 
 
-    // ---------------------- METHODS ----------------------
-
+    // **Can be used for enemys to Hit Players Stamina
     public void UseStamina(float usedStamina)
     {
-        if (currentStamina > 0)
+        if (currentStamina >= 0)
         {
-            startRecover = false;                // Recover off
-            currentStamina -= usedStamina;       // Stamina Value
-            timerActive = true;                  // Start Timer
-            timer = 0;                           // Reset Timer value
-
-            if (currentStamina <= 0)            // Check if Stamina is lower than 0
-            {
-                StartCoroutine(IsTiredCo());
-            }
-        }
+            startRecover = false;                // Recover off
+            currentStamina -= usedStamina;       // Stamina Value
+            timerActive = true;                  // Start Timer
+            timer = 0;                           // Reset Timer value
+        }
         else
         {
-            // return null;
+            IsTired();
         }
 
     }
-    // **Can be used for enemys to Hit Players Stamina
+
 
     public void AddStamina(float addStamina)
     {
-        startRecover = false;                // Recover off
-        currentStamina += addStamina;        // Stamina Value        
-        if (currentStamina > maxStamina)     // Check if Stamina is higher than Max
-        {
-            currentStamina = maxStamina;                        
+        startRecover = false;                // Recover off
+        currentStamina += addStamina;        // Stamina Value        
+        if (currentStamina > maxStamina)     // Check if Stamina is higher than Max
+        {
+            currentStamina = maxStamina;
         }
-        else                                 // If its not...
-        {
-            timer = 0;                       // Reset Recover Timer
-        }
-  
+        else                                 // If its not...
+        {
+            timer = 0;                       // Reset Recover Timer
+        }
+
     }
+
 
     public void ChangeStaminaRecover(float newRechargeRate, float newRechargeTime, float duration)
     {
@@ -128,30 +122,33 @@ public class StaminaController : MonoBehaviour
         rechargeRate = newRechargeRate;
         rechargeTime = newRechargeTime;
 
-        StartCoroutine(ReturnRecoverToNormalCo(oldRechargeRate, oldRechargeTime, duration));
+        Invoke("ReturnRecoverToNormal(oldRechargeRate, oldRechargeTime, duration)", duration);
     }
 
 
-    // ---------------------- COROUTINES ----------------------
-
-    IEnumerator IsTiredCo()
+    public void ReturnRecoverToNormal(float oldRechargeRate, float oldRechargeTime, float duration)
     {
-        Debug.Log("IsTiredCo");
+        //yield return new WaitForSeconds(duration);                  // Wait duration Time before 
+        rechargeRate = oldRechargeRate;                             // change back to old values
+        rechargeTime = oldRechargeTime;
+    }
+
+
+    public void IsTired()
+    {
         isTired = true;
-        timerActive = false;                                        // Stop Timer
-        yield return new WaitForSeconds(tiredDelay);                // Wait for Tired Status to Stop
-        isTired = false;
-        timerActive = true;                                         // Start Timer
-        timer = 0;
+        obj.ChangeState(StateMachine.Tired);       // Change State
+        timerActive = false;                          // Stop Timer
+        Invoke("RecoverTired", tiredDelay);           // Wait for Tired Status to Stop    
     }
 
-    IEnumerator ReturnRecoverToNormalCo(float oldRechargeRate, float oldRechargeTime, float duration)
+    public void RecoverTired()
     {
-        yield return new WaitForSeconds(duration);                  // Wait duration Time before 
-        rechargeRate = oldRechargeRate;                             // change back to old values
-        rechargeTime = oldRechargeTime;
-    }
-
+        isTired = false;
+        obj.ChangeState(StateMachine.Idle);       // Change State
+        timer = 0;                                    // Reset Timer Value
+        timerActive = true;                           // Start Timer
+    }
 }
 
 // ------- FUTURE IMPROVEMENTS -------  

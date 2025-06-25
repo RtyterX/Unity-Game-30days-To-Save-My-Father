@@ -14,4 +14,16 @@ public class RespawnPointer : MonoBehaviour
             Debug.Log("Respawn Mudou");
         }
     }
+
+    public void DoRespawn()
+    {
+       gameObject.transform.position = respawnPosition;
+        Invoke("PausePlayerForASec", 0.4f);
+    }
+
+    private void PausePlayerForASec()
+    {
+        PlayerMovement2D player = GetComponent<PlayerMovement2D>();
+        player.isPaused = true;
+    }
 }

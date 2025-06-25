@@ -4,6 +4,7 @@ public class EnemyState : BehaviourController
 {
     [Header("Battle Mode")]
     public bool battleOn;
+    public bool canMove;
     public GameObject target;
     public float battleDistance;
 
@@ -11,6 +12,7 @@ public class EnemyState : BehaviourController
     public float baseSpeed;
 
     [Header("Respawn")]
+    public bool canRespawn;
     public GameObject startPosition;
 
 
@@ -28,21 +30,26 @@ public class EnemyState : BehaviourController
         {
             if (Vector3.Distance(target.transform.position, transform.position) >= battleDistance + 15)
             {
+                state = StateMachine.Paused;
                 Invoke("SpawnBack", 5);
             }
         }
         else
         {
-            if (!battleOn)
+            if (state != StateMachine.Stagger)
             {
-                if (Vector3.Distance(target.transform.position, transform.position) <= battleDistance)
+
+                if (!battleOn)
                 {
-                    EnterBattleMode();
+                    if (Vector3.Distance(target.transform.position, transform.position) <= battleDistance)
+                    {
+                        EnterBattleMode();
+                    }
                 }
-            }
-            if (Vector3.Distance(target.transform.position, startPosition.transform.position) >= battleDistance + 3)
-            {
-                MoveBackToSpawn();
+                if (Vector3.Distance(target.transform.position, startPosition.transform.position) >= battleDistance + 3)
+                {
+                    MoveBackToSpawn();
+                }
             }
         }
    }
@@ -65,11 +72,24 @@ public class EnemyState : BehaviourController
     public void SpawnBack()
     {
         // Needed to be duplicates in case player reenter the Spawn Area before Invoke 
-        if (Vector3.Distance(target.transform.position, transform.position) >= battleDistance + 15) 
+        if (Vector3.Distance(target.transform.position, transform.position) >= battleDistance + 15)
         {
-            gameObject.transform.position = new Vector2(startPosition.transform.position.x, startPosition.transform.position.y);
-            state = StateMachine.Idle;
+            if (canRespawn)
+            {
+                gameObject.transform.position = new Vector2(startPosition.transform.position.x, startPosition.transform.position.y);
+                state = StateMachine.Idle;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
+        else
+        {
+            state = StateMachine.Dead;
+        }
+
+
     }
 
 

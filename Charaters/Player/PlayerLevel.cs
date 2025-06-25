@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEngine;
 
 public class LevelController : MonoBehaviour
@@ -13,8 +11,8 @@ public class LevelController : MonoBehaviour
 
     [Header("Level Up! Animation")]
     public bool canLevelUp;
-    public UnityEngine.GameObject levelUpAnimation;
-    public UnityEngine.GameObject levelUpIcon;
+    public GameObject levelUpAnimation;
+    public GameObject levelUpIcon;
 
     public void GainEXP(int expEarned)
     {
@@ -49,7 +47,6 @@ public class LevelController : MonoBehaviour
         canLevelUp = false;
 
         StatsController stats = GetComponent<StatsController>();           // Get Component Stats
-        stats.level = currentLevel;                                        // Transfer Level to Stats
 
         levelUpIcon.SetActive(false);
 

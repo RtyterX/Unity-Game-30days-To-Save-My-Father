@@ -4,50 +4,44 @@ using UnityEngine;
 
 public class StatsController : MonoBehaviour
 {
-    public double level;
-
-    // Attributes
+    // -- Attributes --
     [Header("Attributes")]
-    public double vitality;            // Health
-    public double endurance;           // Stamina
-    public double strength;            // Damage
-    public double resistance;          // Defense
-    public double arcane;              // Magic
-    public double luck;                // Luck
+    public double vitality;              // Health
+    public double endurance;             // Stamina
+    public double strength;              // Physical Damage
+    public double resistance;            // Physical Resistance
+    public double arcane;                // Magic / Magic Damage / Magic Resitance
+    public double luck;                  // Loot Luck / Critical Damage
 
-    // Equips
-    [Header("Equipments")]             // Stats you get from Equipment
-    public double damage;              
-    public double magicDmg;
-    public double criticalDmg;
-    public double armorResistence;
-    public double bloodDamage;
-    public double defense;
 
-    // -- Resistences --
-    [Header("Resistences")]            // Resistence against certain
-    public double physicResistence;    // types of damage
-    public double magicResistence;
-    public double electricResistence;
-    public double fireResistence;
-    public double iceResistence;
-    public double darkResistence;
+    // -- Resistances --
+    [Header("Resistances")]              // Against certain types of damage
+    public float physicResistence;      // Resistance:  Limiter = 0,5f
+    public float magicResistence;       // Arcane:      Limiter = 0,6f
+    public float fireResistence;        // Arcane:      Limiter = 0,4f
+    public float iceResistence;         // Arcane:      Limiter = 0,4f
+    public float electricResistence;    // Arcane:      Limiter = 0,4f
+    public float darkResistence;
+
+    [Header("Boosts")]
+    // public List<double> Boosts = new List<double>();     // Make in list???  
+
 
     [Header("EXP")]
-    public int exp;                    // EXP Given to Player when the enemy dies
+    public int exp;                      // EXP Given to Player when the enemy dies
 
-    // Components
-    [HideInInspector] PlayerBehaviour player;
+    // -- Components --
     [HideInInspector] HealthController healthController;
     [HideInInspector] StaminaController staminaController;
+    // [HideInInspector] MagicController magicController;
 
-    // Start is called before the first frame update
+
     void Awake()
     {
         // Get Components
-        player = GetComponent<PlayerBehaviour>();
         healthController = GetComponent<HealthController>();
         staminaController = GetComponent<StaminaController>();
+        // magicController = GetComponent<MagicController>();
 
         UpdateStats();
     }
@@ -56,11 +50,21 @@ public class StatsController : MonoBehaviour
 
     public void UpdateStats()
     {
+        // Check Boosts
+
+
+        // --- Attributes ---
         healthController.maxHealth = vitality * 35;
         staminaController.maxStamina = (float)endurance * 50;
-        // resistance * 20;
-        // arcane * Damage / 3;
+        // magicController.maxMagic = arcane * 10;
 
+
+        // --- Resistances ---
+        physicResistence = 1f - (((float)resistance - 1) * 0.005f);
+        magicResistence = 1f - (((float)arcane - 1) * 0.006f);
+        fireResistence = 1f - (((float)arcane - 1) * 0.004f);
+        iceResistence = 1f - (((float)arcane - 1) * 0.004f);
+        electricResistence = 1f - (((float)arcane - 1) * 0.004f);
     }
 
 }

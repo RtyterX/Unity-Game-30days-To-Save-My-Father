@@ -11,14 +11,14 @@ public class PlayerUIController : MonoBehaviour
     [SerializeField] private Slider staminaBar;
 
     // Components
-    [HideInInspector] private UnityEngine.GameObject player;
+    [HideInInspector] private GameObject player;
     [HideInInspector] private HealthController health;
     [HideInInspector] private StaminaController stamina;
 
     void Start()
     {
         // Get Components
-        player = UnityEngine.GameObject.FindWithTag("Player");
+        player = GameObject.FindWithTag("Player");
         health = player.GetComponent<HealthController>();
         stamina = player.GetComponent<StaminaController>();
     }

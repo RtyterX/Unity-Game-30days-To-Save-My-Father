@@ -78,7 +78,7 @@ public class NPCAttack : MonoBehaviour
         hit.SetActive(true);
     }
    
-    public void OnCollisionEnter2D(Collider2D other)
+    public void OnCollisionEnter2D(Collision2D other)
     {
         behaviour.target = other.gameObject;
     }

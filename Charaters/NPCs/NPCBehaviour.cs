@@ -13,6 +13,8 @@ public enum NPCMode
 
 public class NPCBehaviour : MonoBehaviour
 {
+    public bool canMove;
+
     // Components
     [Header("Components")]
     public Rigidbody2D myRigidbody;
@@ -42,7 +44,7 @@ public class NPCBehaviour : MonoBehaviour
     private int currentPath;
     private int currentWaypoint;
     private int pathMaxNumber;
-    private bool noCurrentPath;
+    public bool noCurrentPath;
 
     // Delay Between Paths
     public float delayBetweenMovement;

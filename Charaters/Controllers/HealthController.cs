@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HealthController : MonoBehaviour
 {
@@ -22,8 +23,10 @@ public class HealthController : MonoBehaviour
     // Components
     [HideInInspector] private StatsController status;
 
+    [SerializeField] public Text damageUI;
 
-    void Awake()
+
+    void Start()
     {
         status = GetComponent<StatsController>();
         // maxHealth = status.vitality * 35;
@@ -84,7 +87,6 @@ public class HealthController : MonoBehaviour
                 recoverValue += Time.deltaTime;
 
             }
-
         }
     }
 
@@ -122,304 +124,135 @@ public class HealthController : MonoBehaviour
         recoverTime = 0;
         recoverValue = 0;
         rechargeRate = 0.02f;
-
-        Debug.Log("ResetRecoverByTime!");
     }
 
-    public void GainLife(int lifeGained)
+    public void GainLife(int lifeGained)  // Only for Player
     {
         life += lifeGained;
-        Debug.Log("GainLife! = " + lifeGained);
+        Debug.Log("Life +" + lifeGained);
     }
 
-    public void TakeDamage(double damageTaken, double criticalDmgMultiplier, DamageType type)
+    public void LostLife()  // Only for Player
     {
-        ResetRecoverByTime();
+        life -= 1;
+        Debug.Log("Player Lost 1 Life");
+    }
 
-        // ---------- Damage By Type ---------------
 
-        // Physic Damage
-        if (type == DamageType.Physic)
+    public void TakeDamage(double damageTaken, DamageType type, Vector2 direction)
+    {
+        if (currentHealth <= 0)
         {
-            #region
+            ResetRecoverByTime();
+            CalculateResistenceByType(type, damageTaken);
 
-            if (gameObject.TryGetComponent<StatsController>(out StatsController enemyStatsComp))  // Necessary ?
-            {
-                // Chance de Dano Critico
-                double criticalChance = enemyStatsComp.luck / 100;
-                double randomNumber = Random.Range((float)criticalChance, 7f);
-
-                Debug.Log("Chance de Dano Critico: "
-                 + criticalChance
-                 + "Número escolhido: "
-                 + randomNumber);
-
-
-                // Applie Damage 
-                if (criticalChance == randomNumber)
-                {
-                    // Critical Hit
-                    double criticalDamage = damageTaken * criticalDmgMultiplier;
-
-                    // Resistence HERE 
-                    // Ex: 
-                    criticalDamage = criticalDamage * status.physicResistence;
-
-                    currentHealth = currentHealth - criticalDamage;
-
-                    Debug.Log("Dano Critico: " + criticalDamage);
-                }
-                else
-                {
-                    // Resistence HERE 
-                    // Ex: 
-                    // damageTaken = damageTaken * status.physicResistence;
-
-                    // Normal Hit
-                    currentHealth -= damageTaken;
-
-                    Debug.Log("Dano: " + damageTaken);
-                }
-
-            }
-            #endregion
-        }
-
-        // ------- Teste Needed --------
-        #region
-
-        // Magic Damage
-        if (type == DamageType.Magic)
-        {
-            if (gameObject.TryGetComponent<StatsController>(out StatsController enemyStatsComp))
+            if (currentHealth < 1)
             {
-                // Resistencia
-                damageTaken -= enemyStatsComp.magicResistence;
-                // Chance de Dano Critico
-                double criticalChance = enemyStatsComp.luck / 60;
-                double randomNumber = Random.Range(((float)criticalChance), 7);
-                Debug.Log("Chance de Dano Critico: "
-                + criticalChance
-                + "Número escolhido: "
-                + randomNumber);
-                // Dano Critico: Valor
-                if (criticalChance == randomNumber)
-                {
-                    double criticalHit = criticalDmgMultiplier / 10;
-                    criticalHit = criticalHit / 6;
-                    damageTaken *= criticalHit;
-                    Debug.Log("Dano Critico: " + damageTaken);
-                }
-                // Dano Final
-                currentHealth -= damageTaken;
-                Debug.Log("Dano: " + damageTaken);
+                currentHealth = 0;
+                IsDead();
             }
-        }
-
-        // Eletric Damage
-        if (type == DamageType.Electric)
-        {
-            if (gameObject.TryGetComponent<StatsController>(out StatsController enemyStatsComp))
+            else
             {
-                // Resistencia
-                damageTaken -= enemyStatsComp.electricResistence;
-                // Chance de Dano Critico
-                double criticalChance = enemyStatsComp.luck / 50;
-                double randomNumber = Random.Range(((float)criticalChance), 7);
-                Debug.Log("Chance de Dano Critico: "
-                + criticalChance
-                + "Número escolhido: "
-                + randomNumber);
-                // Dano Critico: Valor
-                if (criticalChance == randomNumber)
+                if (TryGetComponent<KnockBack>(out KnockBack thisObj))
                 {
-                    double criticalHit = criticalDmgMultiplier / 10;
-                    criticalHit = criticalHit / 6;
-                    damageTaken *= criticalHit;
-                    Debug.Log("Dano Critico: " + damageTaken);
+                    thisObj.DoKnockBack((float)damageTaken, direction);
                 }
-                // Dano Final
-                currentHealth -= damageTaken;
-                Debug.Log("Dano: " + damageTaken);
             }
-        }
-
-        // Fire Damage
-        if (type == DamageType.Fire)
-        {
-            if (gameObject.TryGetComponent<StatsController>(out StatsController enemyStatsComp))
-            {
-                // Resistencia
-                damageTaken -= enemyStatsComp.fireResistence;
-                // Chance de Dano Critico
-                double criticalChance = enemyStatsComp.luck / 50;
-                double randomNumber = Random.Range(((float)criticalChance), 7);
-                Debug.Log("Chance de Dano Critico: "
-                + criticalChance
-                + "Número escolhido: "
-                + randomNumber);
-                // Dano Critico: Valor
-                if (criticalChance == randomNumber)
-                {
-                    double criticalHit = criticalDmgMultiplier / 10;
-                    criticalHit = criticalHit / 6;
-                    damageTaken *= criticalHit;
-                    Debug.Log("Dano Critico: " + damageTaken);
-                }
-                // Dano Final
-                currentHealth -= damageTaken;
-                Debug.Log("Dano: " + damageTaken);
-            }
-
-        }
-
-        // Ice Damage
-        if (type == DamageType.Ice)
-        {
-            if (gameObject.TryGetComponent<StatsController>(out StatsController enemyStatsComp))
-            {
-                // Resistencia
-                damageTaken -= enemyStatsComp.iceResistence;
-                // Chance de Dano Critico
-                double criticalChance = enemyStatsComp.luck / 50;
-                double randomNumber = Random.Range(((float)criticalChance), 7);
-                Debug.Log("Chance de Dano Critico: "
-                + criticalChance
-                + "Número escolhido: "
-                + randomNumber);
-                // Dano Critico: Valor
-                if (criticalChance == randomNumber)
-                {
-                    double criticalHit = criticalDmgMultiplier / 10;
-                    criticalHit = criticalHit / 6;
-                    damageTaken *= criticalHit;
-                    Debug.Log("Dano Critico: " + damageTaken);
-                }
-                // Dano Final
-                currentHealth -= damageTaken;
-                Debug.Log("Dano: " + damageTaken);
-            }
-        }
-
-        // Dark Damage
-        if (type == DamageType.Dark)
-        {
-            if (gameObject.TryGetComponent<StatsController>(out StatsController enemyStatsComp))
-            {
-                // Resistencia
-                damageTaken -= enemyStatsComp.darkResistence;
-                // Chance de Dano Critico
-                double criticalChance = enemyStatsComp.luck / 50;
-                double randomNumber = Random.Range(((float)criticalChance), 7);
-                Debug.Log("Chance de Dano Critico: "
-                + criticalChance
-                + "Número escolhido: "
-                + randomNumber);
-                // Dano Critico: Valor
-                if (criticalChance == randomNumber)
-                {
-                    double criticalHit = criticalDmgMultiplier / 10;
-                    criticalHit = criticalHit / 6;
-                    damageTaken *= criticalHit;
-                    Debug.Log("Dano Critico: " + damageTaken);
-                }
-                // Dano Final
-                currentHealth -= damageTaken;
-                Debug.Log("Dano: " + damageTaken);
-            }
-        }
-
-        // Blood Damage
-        if (type == DamageType.Blood)
-        {
-            if (gameObject.TryGetComponent<StatsController>(out StatsController enemyStatsComp))
-            {
-                // Resistencia
-                damageTaken -= enemyStatsComp.physicResistence;
-                // Chance de Dano Critico
-                double bloodChance = enemyStatsComp.bloodDamage / 10;
-                double randomNumber = Random.Range(((float)bloodChance), 15);
-                Debug.Log("Chance de Dano Critico: " + bloodChance
-                + "Número escolhido: "
-                + randomNumber);
-                // Dano Critico: Valor
-                if (bloodChance == randomNumber)
-                {
-                    double criticalHit = criticalDmgMultiplier / 10;
-                    criticalHit = criticalHit / 8;
-                    damageTaken *= criticalHit;
-                    Debug.Log("Dano de Sangue: " + damageTaken);
-                }
-                // Dano Final
-                currentHealth -= damageTaken;
-                Debug.Log("Dano: " + damageTaken);
-            }
-        }
-
-        #endregion
-
-
-        // ----------------------------------------
-
-        Debug.Log("TakeDamage!");
-
-        if (currentHealth < 1)
-        {
-            currentHealth = 0;
-
-            if (!isDead)
-            {
-                IsDead();   
-                Debug.Log(gameObject.name + " - Vida Chegou a 0");
-            }
-            
         }
 
     }
 
     public void IsDead()
     {
-        if (gameObject.CompareTag("Player"))                                          // If GameObject is Player
-        {
-            life = life - 1;                                                          // Lose 1 Life
+        TryGetComponent<BehaviourController>(out BehaviourController obj);
 
-            if (life <= 0)                                                            // If Life goes 0 
+        if (gameObject.CompareTag("Player"))                                     // Player
+        {
+            LostLife();                                                                    // Lose 1 Life
+            if (life <= 0)                                                                 // If Life goes below 0 
             {
                 life = 0;
                 isDead = true;
+
+                obj.ChangeState(StateMachine.Dead);
                 Debug.Log("Player Morreu");
             }
-            else                                                                      // Else Restore Health and Stamina
-            {
-                healthGoesMax = true;                                                 // Health Goes Max
-                StaminaController staminaController;
-                staminaController = GetComponent<StaminaController>();                // Stamina Goes Max
+            else                                                                            // if life is not below 0
+            {                                                                               // Restore Health and Stamina
+                healthGoesMax = true;                                                       // Health Goes Max (animation)
+                StaminaController staminaController = GetComponent<StaminaController>();    // Stamina Goes Max
                 staminaController.currentStamina = staminaController.maxStamina;
-                // Respawn Player
+                DropInventory();
+                RespawnPlayer();
             }
         }
-        else                                                                          // If GameObject is Not Player
+        else                                                                      // Not Player
         {
-            Debug.Log(name + "is Dead");
             isDead = true;
             Invoke("DropDead", 2);
-            // NEEDED CHANGE FOR RESPAWN AGAIN
+            obj.ChangeState(StateMachine.Dead);
         }
 
     }
+
+    public void RespawnPlayer()
+    {
+        TryGetComponent<RespawnPointer>(out RespawnPointer respawn);
+        respawn.DoRespawn();
+    }
+
 
     // Method Needed for Invoke to work
     public void DropDead()
     {
-        gameObject.TryGetComponent<LootScript>(out LootScript loot);
-        loot.DropLoot();
+        if (gameObject.TryGetComponent<LootScript>(out LootScript loot))
+        {
+            loot.DropLoot();
+        }
     }
 
+    public void DropInventory()
+    {
+
+    }
+
+
+    public void CalculateResistenceByType(DamageType type, double damageTaken)
+    {
+        StatsController stats = GetComponent<StatsController>();
+     
+        if (type == DamageType.Physic)
+        {
+            damageTaken = damageTaken * stats.physicResistence;
+        }
+        if (type == DamageType.Magic)
+        {
+            damageTaken = damageTaken * stats.magicResistence;
+        }
+        if (type == DamageType.Fire)
+        {
+            damageTaken = damageTaken * stats.fireResistence;
+        }
+        if (type == DamageType.Ice)
+        {
+            damageTaken = damageTaken * stats.iceResistence;
+        }
+        if (type == DamageType.Electric)
+        {
+            damageTaken = damageTaken * stats.electricResistence;
+        }
+        if (type == DamageType.Dark)
+        {
+            damageTaken = damageTaken * stats.darkResistence;
+        }
+
+        currentHealth -= damageTaken;
+        damageUI.text = damageTaken.ToString();
+        // Debug.Log(name + " lost " + damageTaken + " of Health");
+    }
 }
 
-// Make Player Respawn when Life is Lost
-// Make Enemy Respawn by Distance and time 
-// Corret Other types of Damage
+
 // Make a better Health Goes Max 
 
 

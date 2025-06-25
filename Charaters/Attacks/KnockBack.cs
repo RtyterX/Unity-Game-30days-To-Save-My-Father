@@ -1,66 +1,46 @@
-﻿using System.Collections;
-using Unity.VisualScripting;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 
 public class KnockBack : MonoBehaviour
 {
-    [SerializeField] private Rigidbody2D myRigidbody2D;
-    [SerializeField] public float strength;
-    [SerializeField] public float delay;
+    [SerializeField] private float resistence;
+    [SerializeField] private float duration;
+    BehaviourController behaviour;
+    Vector2 kbDirection;
 
-
-    [Header("KnockBack")]
-    public bool canKnockBack;
-    [SerializeField] private float strengthKnockBack;
-    [SerializeField] private float delayKnockBack;
-    private Vector2 direction;
-
-
-    // Antigo
-    public void StartKnockBack(UnityEngine.GameObject sender)
+    public void Start()
     {
-        StopAllCoroutines();
-
-         // Codigo que Realiza o KockBack
-        Vector2 direction = (transform.position - sender.transform.position).normalized;
-        myRigidbody2D.AddForce(direction * strength, ForceMode2D.Impulse);
-
-        Debug.Log("Realizou o KnockBack");
-        StartCoroutine(ResetKnockBackCo());
-
+        behaviour = GetComponent<BehaviourController>();
     }
 
-    private IEnumerator ResetKnockBackCo()
+    public void DoKnockBack(float strength, Vector2 forceDirection)
     {
-        // Tempo de Espera para Voltar a fazer suas Rotinas
-        yield return new WaitForSeconds(delay);
-        myRigidbody2D.velocity = Vector3.zero;
-       //  this.gameObject.Enemy.StopCoroutines; - Para Rotinas
+        StatsController stats = GetComponent<StatsController>();
+        float temp = (float)stats.resistance / 75;
+        strength = (400 * temp) - resistence;
+        if (strength > 500)   { strength = 500;  }
+        if (strength < 80)    { strength = 80;   }
+        if (duration == 0)    { duration = 0.5f; }
+
+        kbDirection = forceDirection.normalized;
+        behaviour.myRigidbody.AddForce(kbDirection * strength, ForceMode2D.Impulse);                           // Do the Knock Back Effect
+        Invoke("StaggerDelay", duration);                                                                         // KnockBack Duration
     }
-
-
-
-    // novo?
-    public IEnumerator KnockBackCo()
+    
+    public void StaggerDelay()
     {
-        StopAllCoroutines();
+        behaviour.ChangeState(StateMachine.Stagger);
 
-        Debug.Log("Realizou o KnockBack");
+        StatsController stats = GetComponent<StatsController>();
+        float temp = (float)stats.resistance % 25;
+        float staggerDelay = 2 - temp;
+        if (staggerDelay < 0.5f) { staggerDelay = 0.5f; }
 
-        //state = StateMachine.Stagger;
-        //canMove = false;
-
-        // Codigo que Realiza o KockBack
-        Vector2 direction = (transform.position - gameObject.transform.position).normalized;
-        //myRigidbody.AddForce(direction * strengthKnockBack, ForceMode2D.Impulse);
-
-        yield return new WaitForSeconds(delayKnockBack);
-
-       // state = StateMachine.Idle;
-       // canMove = true;
+        Invoke("ResetKnockBack", staggerDelay);
     }
-
+    private void ResetKnockBack()
+    {
+        behaviour.ChangeState(StateMachine.Idle);
+    }
 
 }
 

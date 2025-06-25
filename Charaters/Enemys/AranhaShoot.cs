@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AranhaShoot : MonoBehaviour
 {
-    public Aranha thisObj;
+    public AranhaScript thisObj;
     public Animator myAnimator;
 
     public UnityEngine.GameObject projectile;
@@ -18,7 +18,7 @@ public class AranhaShoot : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        thisObj = gameObject.GetComponent<Aranha>();
+        thisObj = gameObject.GetComponent<AranhaScript>();
         myAnimator = gameObject.GetComponent<Animator>();
     }
 

@@ -98,7 +98,7 @@ public class PlayerAttack : MonoBehaviour
         Debug.Log("comecou a Attack Co");
 
         // Entra no estado de Ataque (attacking)
-        player.state = StateMachine.Attacking;
+        player.ChangeState(StateMachine.Attacking);
         player.myAnimator.SetBool("attacking", true);
 
         // Player não se Move
@@ -111,7 +111,7 @@ public class PlayerAttack : MonoBehaviour
 
         // Volta para o estado normal (Idle/Not Attacking)
         player.myAnimator.SetBool("attacking", false);
-        player.state = StateMachine.Idle;
+        player.ChangeState(StateMachine.Idle);
 
 
         attack.gameObject.SetActive(false);

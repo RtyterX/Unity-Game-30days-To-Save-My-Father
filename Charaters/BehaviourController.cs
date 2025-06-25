@@ -18,7 +18,7 @@ public enum StateMachine
 
 public abstract class BehaviourController : MonoBehaviour
 {
-    [Header("State")]
+    [Header("State Machine")]
     public StateMachine state;
 
     [Header("Components")]
@@ -33,6 +33,11 @@ public abstract class BehaviourController : MonoBehaviour
         myRigidbody = GetComponent<Rigidbody2D>();
         health = GetComponent<HealthController>();
         stamina = GetComponent<StaminaController>();
+    }
+
+    public virtual void ChangeState(StateMachine objState)
+    {
+        state = objState;
     }
 
 }

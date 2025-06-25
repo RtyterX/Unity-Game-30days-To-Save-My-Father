@@ -156,7 +156,6 @@ public class PlayerMovement2D : MonoBehaviour
         {
             myRigidbody.velocity = Vector2.zero;     // Stop any Movement
             myRigidbody.mass = 5000;                 // Necessary?
-            behaviour.state = StateMachine.Paused;   // Necessary?
             currentSpeed = 0;
         }
     }

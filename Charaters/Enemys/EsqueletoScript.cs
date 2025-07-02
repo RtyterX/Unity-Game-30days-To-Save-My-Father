@@ -3,8 +3,6 @@
 public class EsqueletoScript : EnemyState
 {
     [Header("Attack")]
-    public bool canAttackAgain;
-    public float attackRadius;
     public float attackDelay;
     public GameObject attackObj;
 
@@ -15,55 +13,104 @@ public class EsqueletoScript : EnemyState
     public override void Start()
     {
         base.Start();
-        randomNextMove = new Vector2(startPosition.transform.position.x, startPosition.transform.position.y);
+        randomNextMove = new Vector2(startPosition.x, startPosition.y);
     }
 
     public override void Update()
     {
         base.Update();
-        if (battleOn)
+
+        // Movement
+        if (canMove)
         {
-            if (Vector3.Distance(target.transform.position, transform.position) <= attackRadius)
-            {
-                if (canAttackAgain)
-                {
-                    Invoke("StartAttack", attackDelay);
-                }
-            }
-            else
+            if (Vector3.Distance(transform.position, target.transform.position) <= battleRadius && Vector3.Distance(transform.position, target.transform.position) >= attackRadius)
             {
                 ChaseMoviment(baseSpeed);
             }
+            else
+            {
+                RandomMovement();
+            }
         }
-        else
+
+        // Attack
+        if (canAttack)
         {
-            RandomMoviment();
-            HealthRegeneration();
+            if (Vector3.Distance(transform.position, target.transform.position) <= attackRadius)
+            {
+                StartAttack();
+            }
+        }
+    }
+
+    public void ChangeState(StateMachine enemyState)
+    {
+        base.ChangeState(enemyState);
+        state = enemyState;
+        switch (state)
+        {
+            case StateMachine.Idle:
+                canMove = true;
+                Invoke("ReturnAttack", attackDelay);
+                break;
+            case StateMachine.Interect:
+                canMove = false;
+                canAttack = false;
+                break;
+            case StateMachine.Attacking:
+                canMove = false;
+                canAttack = false;
+                break;
+            case StateMachine.Stagger:
+                canMove = false;
+                canAttack = false;
+                break;
+            case StateMachine.Dead:
+                canMove = false;
+                canAttack = false;
+                break;
         }
     }
 
     public void StartAttack()
     {
-        canAttackAgain = false;
+        ChangeState(StateMachine.Attacking);
+        // Attack Animation
         attackObj.SetActive(true);
-        Invoke("AttackDelay", attackDelay);
+        Invoke("ReturnMovement", 1f);
     }
 
-    public void AttackDelay()
+    public void PauseMovement()
     {
-        canAttackAgain = true;
+        canMove = true;
+        Invoke("ReturnMovement", 1f);
+    }
+
+    public void ReturnMovement()
+    {
+        ChangeState(StateMachine.Idle);
         attackObj.SetActive(false);
     }
 
-    public void RandomMoviment()
+    public void ReturnAttack()
     {
+        canAttack = true;
+    }
+
+    public void RandomMovement()
+    {
+        if (state != StateMachine.Walking)
+        {
+            ChangeState(StateMachine.Walking);
+        }
+
         // Positive Max:
-        float limitX = startPosition.transform.position.x + maxRandom;
-        float limitY = startPosition.transform.position.y + maxRandom;
+        float limitX = startPosition.x + maxRandom;
+        float limitY = startPosition.y + maxRandom;
 
         // Negative Max:
-        float nLimitX = startPosition.transform.position.x - maxRandom;
-        float nLimitY = startPosition.transform.position.y - maxRandom;
+        float nLimitX = startPosition.x - maxRandom;
+        float nLimitY = startPosition.y - maxRandom;
 
         Vector2 actualPosition = new Vector2(gameObject.transform.position.x, gameObject.transform.position.y);
 
@@ -74,6 +121,7 @@ public class EsqueletoScript : EnemyState
         }
         if (actualPosition == randomNextMove)                             //  If character reachs random position
         {
+            Invoke("PauseMovement", 1f);
             GetRandomMove();
         }
 

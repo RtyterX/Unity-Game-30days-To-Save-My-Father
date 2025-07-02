@@ -12,10 +12,10 @@ public class HitDetection : MonoBehaviour
     public DamageType damageType;
     public UnityEvent effect;
 
+    public LayerMask myLayerMask;
+
     [Header("KnockBack Direction")]
     Vector2 direction;
-
-    public GameObject obj;
 
     public void Start()
     {
@@ -24,38 +24,41 @@ public class HitDetection : MonoBehaviour
 
     public void OnTriggerEnter2D(Collider2D col)
     {
-        if (!wasHit)
-        {
+        //if (!wasHit)
+       // {
             wasHit = true;
-            obj = col.gameObject; // Block Spam Attacks
 
-            if (obj.gameObject.TryGetComponent<HealthController>(out HealthController otherObj))
+            if (col.gameObject.TryGetComponent<HealthController>(out HealthController otherObj))
             {
-                CalculateDamage();
-                direction = col.gameObject.transform.position - transform.position;                      // Set Knock Back Direction
-                otherObj.TakeDamage(finalDamage, damageType, direction);                                  // Apply Damage
-                if (effect != null)
+                if (myLayerMask == col.gameObject.layer)
                 {
-                    effect.Invoke();                                                                     // Apply Effect, if weapon has one
-                }
-                                
-                // ------ GainXP -------
-                if (otherObj.isDead)                                                               
-                {
-                    if (gameObject.CompareTag("Player"))
+                    Debug.Log("Pegou Hit");
+                    CalculateDamage();
+                    direction = col.gameObject.transform.position - transform.position;                      // Set Knock Back Direction
+                    otherObj.TakeDamage(finalDamage, damageType, direction);                                  // Apply Damage
+                    if (effect != null)
                     {
-                        if (col.gameObject.TryGetComponent<StatsController>(out StatsController otherObjStats)
-                        && gameObject.TryGetComponent<LevelController>(out LevelController levelController))
-                        {
-                            levelController.GainEXP(otherObjStats.exp);
-                        }
+                        effect.Invoke();                                                                     // Apply Effect, if weapon has one
                     }
 
+                    // ------ GainXP -------
+                    if (otherObj.isDead)
+                    {
+                        if (gameObject.CompareTag("Player"))
+                        {
+                            if (col.gameObject.TryGetComponent<StatsController>(out StatsController otherObjStats)
+                            && gameObject.TryGetComponent<LevelController>(out LevelController levelController))
+                            {
+                                levelController.GainEXP(otherObjStats.exp);
+                            }
+                        }
+
+                    }
+                    Invoke("CanHitAgain", 0.5f);
                 }
-                Invoke("CanHitAgain", 0.5f);
             }
-            Debug.Log(name + " do " + baseDamage);
-        }
+           // Debug.Log(name + " do " + baseDamage);
+        //}
     }
 
     public void CanHitAgain()
@@ -102,12 +105,12 @@ public class HitDetection : MonoBehaviour
         if (criticalOrNot)
         {
             baseDamage += baseDamage * 0.30f;
-            Debug.Log("Critical = " + baseDamage);
+         //   Debug.Log("Critical = " + baseDamage);
         }
 
         finalDamage = 1f + (((float)stats.strength - 1) / 1.5f);
 
-        Debug.Log(name + " do " + baseDamage);
+       // Debug.Log(name + " do " + baseDamage);
 
     }
 }

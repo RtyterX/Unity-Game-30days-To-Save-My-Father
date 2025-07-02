@@ -12,7 +12,7 @@ public class TransitionAnimation : MonoBehaviour
     [SerializeField] private GameObject startingAnimation;
     [SerializeField] private GameObject endingAnimation;
 
-    public CameraFollowPlayer camera;
+    public CameraFollowPlayer mainCamera;
 
     void Awake()
     {
@@ -35,7 +35,7 @@ public class TransitionAnimation : MonoBehaviour
 
     IEnumerator StartTransition()
     {
-        camera.isPaused = true;
+        mainCamera.isPaused = true;
 
         startingAnimation.SetActive(true);
         yield return new WaitForSeconds(5);
@@ -47,13 +47,13 @@ public class TransitionAnimation : MonoBehaviour
         startingAnimation.SetActive(false);
         animationOn = false;
 
-        camera.isPaused = false;
+        mainCamera.isPaused = false;
 ;
     }
 
     IEnumerator EnterSceneTransition()
     {
-        camera.isPaused = true;
+        mainCamera.isPaused = true;
 
         endingAnimation.SetActive(true);
         yield return new WaitForSeconds(3);
@@ -63,7 +63,7 @@ public class TransitionAnimation : MonoBehaviour
         enterScene = false;
         animationOn = false;
 
-        camera.isPaused = false;
+        mainCamera.isPaused = false;
 
     }
 

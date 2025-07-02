@@ -12,7 +12,7 @@ public enum StateMachine
     Tired,
     Stagger,
     Interect,
-    Chase,
+    Chasing,
     Dead,
 }
 

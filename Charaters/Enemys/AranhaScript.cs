@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class AranhaScript : EnemyState
 {
     public float newSpeed;
-    public float attackRadius;
-    public float fleeRadius;
-    public bool canAttack;
+    public float jumpRadius;
 
     public InputController playerInput;
 
@@ -19,6 +19,7 @@ public class AranhaScript : EnemyState
         canMove = true;
         canAttack = true;
     }
+    
 
     public override void ChangeState(StateMachine enemyState)
     {
@@ -50,50 +51,52 @@ public class AranhaScript : EnemyState
 
     public override void Update()
     {
-            base.Update();
-        if (battleOn && state != StateMachine.Stagger)
+        base.Update();
+
+        // Movement
+        if (canMove)
         {
             if (Vector3.Distance(target.transform.position, transform.position) <= attackRadius)
             {
-                if (canAttack)
-                {
-                    if (Vector3.Distance(target.transform.position, transform.position) <= fleeRadius)
-                    {
-                        JumpBack();
-                    }
-                    if (transform.position.x <= target.transform.position.x + 0.10f && transform.position.x >= target.transform.position.x - 0.10f)
-                    {
-                        Debug.Log("Chegou Aqui");
-                        ShootAttack();
-                    }
-                    if (transform.position.y <= target.transform.position.y + 0.10f && transform.position.y >= target.transform.position.y - 0.10f)
-                    {
-                        ShootAttack();
-                    }
-                }
+                FollowTargetLine();
             }
-
-            if (canMove && state != StateMachine.Stagger)
+            else if (Vector3.Distance(target.transform.position, transform.position) <= jumpRadius)
             {
-                if (Vector3.Distance(target.transform.position, transform.position) <= attackRadius)
-                {
-                    FollowTargetLine();
-                }
-                else if (Vector3.Distance(target.transform.position, transform.position) <= fleeRadius)
-                {
-                    // JumpBack();
-                }
-                else if (Vector3.Distance(target.transform.position, transform.position) <= battleDistance)
-                {
-                    ChaseMoviment(newSpeed);
-                }
+                // JumpBack();
+            }
+            else if (Vector3.Distance(target.transform.position, transform.position) <= battleRadius)
+            {
+                ChaseMoviment(newSpeed);
             }
         }
         else
         {
             // Not Move
         }
-       
+
+        // Attack
+        if (canAttack)
+        {
+            if (Vector3.Distance(target.transform.position, transform.position) <= attackRadius)
+            {
+
+                if (Vector3.Distance(target.transform.position, transform.position) <= jumpRadius)
+                {
+                    JumpBack();
+                }
+                if (transform.position.x <= target.transform.position.x + 0.10f && transform.position.x >= target.transform.position.x - 0.10f)
+                {
+                    Debug.Log("Chegou Aqui");
+                    ShootAttack();
+                }
+                if (transform.position.y <= target.transform.position.y + 0.10f && transform.position.y >= target.transform.position.y - 0.10f)
+                {
+                    ShootAttack();
+                }
+            }
+
+        }
+
     }
 
 

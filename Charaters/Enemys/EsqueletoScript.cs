@@ -6,14 +6,14 @@ public class EsqueletoScript : EnemyState
     public float attackDelay;
     public GameObject attackObj;
 
-    [Header("RandomMoviment")]
+    [Header("RandomMovement")]
     public Vector2 randomNextMove;
     public float maxRandom;
 
     public override void Start()
     {
         base.Start();
-        randomNextMove = new Vector2(startPosition.x, startPosition.y);
+        GetRandomMove();
     }
 
     public override void Update()
@@ -25,11 +25,13 @@ public class EsqueletoScript : EnemyState
         {
             if (Vector3.Distance(transform.position, target.transform.position) <= battleRadius && Vector3.Distance(transform.position, target.transform.position) >= attackRadius)
             {
-                ChaseMoviment(baseSpeed);
+                ChaseMovement(baseSpeed);
+                Debug.Log("Chasing");
             }
             else
             {
                 RandomMovement();
+                Debug.Log("Random Movement");
             }
         }
 
@@ -39,11 +41,12 @@ public class EsqueletoScript : EnemyState
             if (Vector3.Distance(transform.position, target.transform.position) <= attackRadius)
             {
                 StartAttack();
+                Debug.Log("Attacking");
             }
         }
     }
 
-    public void ChangeState(StateMachine enemyState)
+    public override void ChangeState(StateMachine enemyState)
     {
         base.ChangeState(enemyState);
         state = enemyState;
@@ -82,7 +85,7 @@ public class EsqueletoScript : EnemyState
 
     public void PauseMovement()
     {
-        canMove = true;
+        canMove = false;
         Invoke("ReturnMovement", 1f);
     }
 
@@ -112,6 +115,8 @@ public class EsqueletoScript : EnemyState
         float nLimitX = startPosition.x - maxRandom;
         float nLimitY = startPosition.y - maxRandom;
 
+        Debug.Log("nLimitX = " + nLimitX);
+
         Vector2 actualPosition = new Vector2(gameObject.transform.position.x, gameObject.transform.position.y);
 
         if (randomNextMove.x > limitX && randomNextMove.y > limitY 
@@ -128,7 +133,6 @@ public class EsqueletoScript : EnemyState
         // Moves To Random Position
         Vector3 random = Vector3.MoveTowards(transform.position, randomNextMove, baseSpeed * Time.deltaTime);
         myRigidbody.MovePosition(random);
-
     }
 
 
@@ -138,22 +142,28 @@ public class EsqueletoScript : EnemyState
         float newX = transform.position.x;
         float newY = transform.position.y;
 
-        int test = Random.Range(0, 100);
-        if (test >= 0 && test <= 25)           // Left
+        int test = Random.Range(1, 100);
+        if (test >= 0 && test < 25)           // Left
         {
-            newX =+ 1;
+            float value = Random.Range(0.20f, 1);
+            Debug.Log("value = " + value);
+            newX += value;
+            Debug.Log("Positive NewX: " + newX + " - e o value foi: " + value);
         }
-        if (test >= 25 && test <= 50)          // Right
+        else if (test >= 25 && test < 50)          // Right
         {
-            newX =- 1;
+            newX -= Random.Range(0.20f, 1);
+            Debug.Log("Negative NewX: " + newX + " - e o teste foi: " + test);
         }
-        if (test >= 50 && test <= 75)          // Up  
+        else if (test >= 50 && test < 75)          // Up  
         {
-            newY =+ 1;
+            newY += Random.Range(0.20f, 1);
+            Debug.Log("Positive NewY: " + newX + " - e o teste foi: " + test);
         }
-        if (test >= 75 && test <= 100)         // Down 
+        else if (test >= 75 && test < 100)         // Down 
         {
-            newY =- 1;
+            newY -= Random.Range(0.20f, 1);
+            Debug.Log("Negative NewY: " + newX + " - e o teste foi: " + test);
         }
 
         randomNextMove = new Vector2(newX, newY);

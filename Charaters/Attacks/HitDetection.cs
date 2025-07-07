@@ -58,7 +58,7 @@ public class HitDetection : MonoBehaviour
                 }
             }
            // Debug.Log(name + " do " + baseDamage);
-        //}
+        //s}
     }
 
     public void CanHitAgain()
@@ -104,8 +104,11 @@ public class HitDetection : MonoBehaviour
         // Apply Damage 
         if (criticalOrNot)
         {
-            baseDamage += baseDamage * 0.30f;
-         //   Debug.Log("Critical = " + baseDamage);
+            finalDamage = baseDamage + (baseDamage * 0.3f);
+        }
+        else
+        {
+            finalDamage = baseDamage;
         }
 
         finalDamage = 1f + (((float)stats.strength - 1) / 1.5f);

@@ -141,64 +141,102 @@ public class HealthController : MonoBehaviour
 
     public void TakeDamage(double damageTaken, DamageType type, Vector2 direction)
     {
-        if (currentHealth <= 0)
+        if (currentHealth >= 1)                                                  // Stop applying damage if Obj is Dead (health below 0)
         {
-            ResetRecoverByTime();
-            CalculateResistenceByType(type, damageTaken);
+            ResetRecoverByTime();                                                // Stop if Obj is recovering Health by time
+            ApplyDamage(type, damageTaken);                                      // Apply Damage
 
-            if (currentHealth < 1)
+            if (currentHealth < 1)                                               // Check if Obj is Dead
             {
-                currentHealth = 0;
-                IsDead();
+                currentHealth = 0;                                               // Ensure health is 0
+                Invoke("IsDead", 1.5f);                                          // Start Death Method with Delay
             }
             else
             {
+                BehaviourController obj = GetComponent<BehaviourController>();
+                obj.state = StateMachine.Stagger;                                // Change Obj State to Stagger
+
                 if (TryGetComponent<KnockBack>(out KnockBack thisObj))
                 {
-                    thisObj.DoKnockBack((float)damageTaken, direction);
+                    thisObj.DoKnockBack((float)damageTaken, direction);          // Do KnockBack only if Obj has the script
                 }
             }
         }
-
     }
+
+
+    public void ApplyDamage(DamageType type, double damageTaken)
+    {
+        StatsController stats = GetComponent<StatsController>();
+
+        if (type == DamageType.Physic)            // Physic
+        {
+            damageTaken = damageTaken * (1f - (((float)stats.resistance - 1) * 0.005f));
+        }
+        if (type == DamageType.Magic)             // Magic
+        {
+            damageTaken = damageTaken * (1f - (((float)stats.arcane - 1) * 0.006f));
+        }
+        if (type == DamageType.Fire)              // Fire
+        {
+            damageTaken = damageTaken * (1f - (((float)stats.arcane - 1) * 0.004f));
+        }
+        if (type == DamageType.Ice)              // Ice
+        {
+            damageTaken = damageTaken * (1f - (((float)stats.arcane - 1) * 0.004f));
+        }
+        if (type == DamageType.Electric)         // Electric
+        {
+            damageTaken = damageTaken * (1f - (((float)stats.arcane - 1) * 0.004f));
+        }
+        if (type == DamageType.Dark)             // Dark
+        {
+            damageTaken = damageTaken * (1f - (((float)stats.luck - 1) * 0.007f));
+        }
+
+        currentHealth -= damageTaken;            // Apply Damage
+        damageUI.text = damageTaken.ToString();  // Teste with damage showing on screen
+
+        // Debug.Log(name + " lost " + damageTaken + " of Health");
+    }
+
 
     public void IsDead()
     {
         TryGetComponent<BehaviourController>(out BehaviourController obj);
 
-        if (gameObject.CompareTag("Player"))                                     // Player
+        if (gameObject.CompareTag("Player"))                               // Player
         {
-            LostLife();                                                                    // Lose 1 Life
-            if (life <= 0)                                                                 // If Life goes below 0 
+            LostLife();                                                                     // Lose 1 Life
+            if (life <= 0)                                                                  // If Life goes below 0...
             {
-                life = 0;
+                life = 0;                                                                   // Ensure life is 0
                 isDead = true;
-
-                obj.ChangeState(StateMachine.Dead);
+                obj.ChangeState(StateMachine.Dead);                                         // Change Player State to Dead
                 Debug.Log("Player Morreu");
             }
             else                                                                            // if life is not below 0
-            {                                                                               // Restore Health and Stamina
-                healthGoesMax = true;                                                       // Health Goes Max (animation)
-                StaminaController staminaController = GetComponent<StaminaController>();    // Stamina Goes Max
-                staminaController.currentStamina = staminaController.maxStamina;
-                DropInventory();
-                RespawnPlayer();
+            {
+                DropInventory();                                                            // Drop Inventory
+                RespawnPlayer();                                                            // Respawn Player
             }
         }
-        else                                                                      // Not Player
+        else                                                               // Not Player
         {
             isDead = true;
-            Invoke("DropDead", 2);
-            obj.ChangeState(StateMachine.Dead);
+            obj.ChangeState(StateMachine.Dead);                                             // Change obj State to Dead
+            Invoke("DropDead", 2);                                                          // Drop Loot
         }
 
     }
 
     public void RespawnPlayer()
     {
+        healthGoesMax = true;                                                               // Health Goes Max (animation)
+        StaminaController staminaController = GetComponent<StaminaController>();
+        staminaController.currentStamina = staminaController.maxStamina;                    // Stamina Goes Max
         TryGetComponent<RespawnPointer>(out RespawnPointer respawn);
-        respawn.DoRespawn();
+        respawn.DoRespawn();                                                                // Respawn Player
     }
 
 
@@ -213,47 +251,18 @@ public class HealthController : MonoBehaviour
 
     public void DropInventory()
     {
-
+        // Make it Later
     }
 
-
-    public void CalculateResistenceByType(DamageType type, double damageTaken)
-    {
-        StatsController stats = GetComponent<StatsController>();
-     
-        if (type == DamageType.Physic)
-        {
-            damageTaken = damageTaken * stats.physicResistence;
-        }
-        if (type == DamageType.Magic)
-        {
-            damageTaken = damageTaken * stats.magicResistence;
-        }
-        if (type == DamageType.Fire)
-        {
-            damageTaken = damageTaken * stats.fireResistence;
-        }
-        if (type == DamageType.Ice)
-        {
-            damageTaken = damageTaken * stats.iceResistence;
-        }
-        if (type == DamageType.Electric)
-        {
-            damageTaken = damageTaken * stats.electricResistence;
-        }
-        if (type == DamageType.Dark)
-        {
-            damageTaken = damageTaken * stats.darkResistence;
-        }
-
-        currentHealth -= damageTaken;
-        damageUI.text = damageTaken.ToString();
-        // Debug.Log(name + " lost " + damageTaken + " of Health");
-    }
 }
 
 
 // Make a better Health Goes Max 
+
+
+
+
+
 
 
 

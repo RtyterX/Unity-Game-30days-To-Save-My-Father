@@ -77,7 +77,7 @@ public class EnemyState : BehaviourController
 
     }
 
-    public void ChaseMoviment(float speed)
+    public void ChaseMovement(float speed)
     {
         if (state != StateMachine.Walking)
         {

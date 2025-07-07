@@ -11,7 +11,7 @@ public class StatsController : MonoBehaviour
     public double strength;              // Physical Damage
     public double resistance;            // Physical Resistance
     public double arcane;                // Magic / Magic Damage / Magic Resitance
-    public double luck;                  // Loot Luck / Critical Damage
+    public double luck;                  // Loot / Critical Damage / Dark Resistance
 
 
     // -- Resistances --
@@ -21,7 +21,7 @@ public class StatsController : MonoBehaviour
     public float fireResistence;        // Arcane:      Limiter = 0,4f
     public float iceResistence;         // Arcane:      Limiter = 0,4f
     public float electricResistence;    // Arcane:      Limiter = 0,4f
-    public float darkResistence;
+    public float darkResistence;        // Luck         Limiter = 0,7f
 
     [Header("Boosts")]
     // public List<double> Boosts = new List<double>();     // Make in list???  
@@ -52,19 +52,19 @@ public class StatsController : MonoBehaviour
     {
         // Check Boosts
 
-
         // --- Attributes ---
-        healthController.maxHealth = vitality * 35;
-        staminaController.maxStamina = (float)endurance * 50;
-        // magicController.maxMagic = arcane * 10;
-
+        healthController.maxHealth = vitality * 5.7f;
+        staminaController.maxStamina = (float)endurance * 3f;
+        // magicController.maxMagic = arcane * 4f;
 
         // --- Resistances ---
-        physicResistence = 1f - (((float)resistance - 1) * 0.005f);
-        magicResistence = 1f - (((float)arcane - 1) * 0.006f);
-        fireResistence = 1f - (((float)arcane - 1) * 0.004f);
-        iceResistence = 1f - (((float)arcane - 1) * 0.004f);
-        electricResistence = 1f - (((float)arcane - 1) * 0.004f);
+        physicResistence = (float)resistance * 0.5f;
+        magicResistence = (float)arcane * 0.6f;
+        fireResistence = (float)arcane * 0.4f;
+        iceResistence = (float)arcane * 0.4f;
+        electricResistence = (float)arcane * 0.4f;
+        darkResistence = (float)luck * 0.7f;
+
     }
 
 }

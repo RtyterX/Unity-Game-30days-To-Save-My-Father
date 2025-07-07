@@ -66,7 +66,7 @@ public class AranhaScript : EnemyState
             }
             else if (Vector3.Distance(target.transform.position, transform.position) <= battleRadius)
             {
-                ChaseMoviment(newSpeed);
+                ChaseMovement(newSpeed);
             }
         }
         else

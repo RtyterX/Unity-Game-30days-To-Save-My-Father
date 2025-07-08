@@ -23,15 +23,16 @@ public class EsqueletoScript : EnemyState
         // Movement
         if (canMove)
         {
-            if (Vector3.Distance(transform.position, target.transform.position) <= battleRadius && Vector3.Distance(transform.position, target.transform.position) >= attackRadius)
+            if (Vector3.Distance(transform.position, target.transform.position) <= battleRadius)
             {
-                ChaseMovement(baseSpeed);
-                Debug.Log("Chasing");
+                if (Vector3.Distance(transform.position, target.transform.position) > attackRadius)
+                {
+                    ChaseMovement(baseSpeed);
+                }
             }
             else
             {
                 RandomMovement();
-                Debug.Log("Random Movement");
             }
         }
 
@@ -41,7 +42,6 @@ public class EsqueletoScript : EnemyState
             if (Vector3.Distance(transform.position, target.transform.position) <= attackRadius)
             {
                 StartAttack();
-                Debug.Log("Attacking");
             }
         }
     }
@@ -83,18 +83,14 @@ public class EsqueletoScript : EnemyState
         Invoke("ReturnMovement", 1f);
     }
 
-    public void PauseMovement()
-    {
-        canMove = false;
-        Invoke("ReturnMovement", 1f);
-    }
-
     public void ReturnMovement()
     {
         ChangeState(StateMachine.Idle);
         attackObj.SetActive(false);
+        GetRandomMove();
     }
 
+    // Important to create delays between attack (block Attack Spam)
     public void ReturnAttack()
     {
         canAttack = true;
@@ -102,11 +98,64 @@ public class EsqueletoScript : EnemyState
 
     public void RandomMovement()
     {
-        if (state != StateMachine.Walking)
+        Vector2 actualPosition = new Vector2(gameObject.transform.position.x, gameObject.transform.position.y);
+
+        if (actualPosition == randomNextMove)             //  If character reachs random position
         {
-            ChangeState(StateMachine.Walking);
+            canMove = false;                                        //  Pause Movement
+            Invoke("ReturnMovement", 1.5f);                         //  Return Movement After 1,5s
+        }
+        else                                             // If character has not reached random position
+        {
+            if (state != StateMachine.Walking)
+            {
+                ChangeState(StateMachine.Walking);                  //  Set State to Walking
+            }
+
+            // Move to Random Position
+            Vector3 random = Vector3.MoveTowards(transform.position, randomNextMove, baseSpeed * Time.deltaTime);
+            myRigidbody.MovePosition(random);
+        }
+    }
+
+    public void GetRandomMove()
+    {
+        // New Positions
+        float newX = transform.position.x;
+        float newY = transform.position.y;
+
+        // Random Direction
+        int test = Random.Range(1, 100);
+        if (test >= 0 && test < 25)                  // Left
+        {
+            float value = Random.Range(0.20f, 1);
+            Debug.Log("value = " + value);
+            newX += value;
+            Debug.Log("Positive NewX: " + newX + " - e o value foi: " + value);
+        }
+        else if (test >= 25 && test < 50)            // Right
+        {
+            newX -= Random.Range(0.20f, 1);
+            Debug.Log("Negative NewX: " + newX + " - e o teste foi: " + test);
+        }
+        else if (test >= 50 && test < 75)            // Up  
+        {
+            newY += Random.Range(0.20f, 1);
+            Debug.Log("Positive NewY: " + newX + " - e o teste foi: " + test);
+        }
+        else if (test >= 75 && test < 100)           // Down 
+        {
+            newY -= Random.Range(0.20f, 1);
+            Debug.Log("Negative NewY: " + newX + " - e o teste foi: " + test);
         }
 
+        randomNextMove = new Vector2(newX, newY);    // Set new Random Move
+
+        CheckNextMove();
+    }
+
+    public void CheckNextMove()
+    {
         // Positive Max:
         float limitX = startPosition.x + maxRandom;
         float limitY = startPosition.y + maxRandom;
@@ -115,58 +164,11 @@ public class EsqueletoScript : EnemyState
         float nLimitX = startPosition.x - maxRandom;
         float nLimitY = startPosition.y - maxRandom;
 
-        Debug.Log("nLimitX = " + nLimitX);
-
-        Vector2 actualPosition = new Vector2(gameObject.transform.position.x, gameObject.transform.position.y);
-
-        if (randomNextMove.x > limitX && randomNextMove.y > limitY 
+        if (randomNextMove.x > limitX && randomNextMove.y > limitY
         && randomNextMove.x < nLimitX && randomNextMove.y < nLimitY)      //  If reach limit of random values
         {
             GetRandomMove();                                              //  Try Again  
         }
-        if (actualPosition == randomNextMove)                             //  If character reachs random position
-        {
-            Invoke("PauseMovement", 1f);
-            GetRandomMove();
-        }
-
-        // Moves To Random Position
-        Vector3 random = Vector3.MoveTowards(transform.position, randomNextMove, baseSpeed * Time.deltaTime);
-        myRigidbody.MovePosition(random);
-    }
-
-
-    public void GetRandomMove()
-    {
-        // New Positions
-        float newX = transform.position.x;
-        float newY = transform.position.y;
-
-        int test = Random.Range(1, 100);
-        if (test >= 0 && test < 25)           // Left
-        {
-            float value = Random.Range(0.20f, 1);
-            Debug.Log("value = " + value);
-            newX += value;
-            Debug.Log("Positive NewX: " + newX + " - e o value foi: " + value);
-        }
-        else if (test >= 25 && test < 50)          // Right
-        {
-            newX -= Random.Range(0.20f, 1);
-            Debug.Log("Negative NewX: " + newX + " - e o teste foi: " + test);
-        }
-        else if (test >= 50 && test < 75)          // Up  
-        {
-            newY += Random.Range(0.20f, 1);
-            Debug.Log("Positive NewY: " + newX + " - e o teste foi: " + test);
-        }
-        else if (test >= 75 && test < 100)         // Down 
-        {
-            newY -= Random.Range(0.20f, 1);
-            Debug.Log("Negative NewY: " + newX + " - e o teste foi: " + test);
-        }
-
-        randomNextMove = new Vector2(newX, newY);
     }
 
 }
